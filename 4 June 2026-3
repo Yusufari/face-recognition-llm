@@ -1,0 +1,123 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 50)
+print("DAY 3 - OPENCV PRACTICE (VERSION A)")
+print("4 June 2026")
+print("=" * 50)
+
+# 1. UPLOAD YOUR OWN IMAGE
+print("\n--- 1. PLEASE UPLOAD A FACE IMAGE ---")
+uploaded = files.upload()
+
+# Get the filename
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Image uploaded: {image_path}")
+
+# 2. READ THE IMAGE
+print("\n--- 2. READ IMAGE ---")
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+print(f"Image size: {img.shape}")
+
+# 3. DIFFERENT COLOR CONVERSIONS
+print("\n--- 3. COLOR CONVERSIONS ---")
+
+# Grayscale
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# HSV (Hue, Saturation, Value)
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+# LAB color space
+lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+
+print("Created: Grayscale, HSV, and LAB versions")
+
+# 4. DIFFERENT RESIZING METHODS
+print("\n--- 4. RESIZING METHODS ---")
+
+# Method 1: Exact size
+resized_exact = cv2.resize(img, (200, 200))
+
+# Method 2: Scale by factor (50% smaller)
+height, width = img.shape[:2]
+resized_half = cv2.resize(img, (width//2, height//2))
+
+# Method 3: Scale by factor (2x larger)
+resized_double = cv2.resize(img, (width*2, height*2))
+
+print(f"Original: {width} x {height}")
+print(f"Half size: {width//2} x {height//2}")
+print(f"Double size: {width*2} x {height*2}")
+
+# 5. ADD SIMPLE EFFECTS
+print("\n--- 5. IMAGE EFFECTS ---")
+
+# Blur
+blur = cv2.GaussianBlur(img, (15, 15), 0)
+
+# Edge detection
+edges = cv2.Canny(gray, 100, 200)
+
+# Brightness adjustment
+bright = cv2.convertScaleAbs(img, alpha=1.5, beta=30)
+
+print("Added: Blur, Edge Detection, Brightness adjustment")
+
+# 6. DISPLAY ALL RESULTS
+print("\n--- 6. DISPLAY RESULTS ---")
+
+plt.figure(figsize=(15, 10))
+
+# Original
+plt.subplot(2, 3, 1)
+plt.imshow(img_rgb)
+plt.title("1. Original")
+plt.axis('off')
+
+# Grayscale
+plt.subplot(2, 3, 2)
+plt.imshow(gray, cmap='gray')
+plt.title("2. Grayscale")
+plt.axis('off')
+
+# HSV
+plt.subplot(2, 3, 3)
+plt.imshow(hsv)
+plt.title("3. HSV Color Space")
+plt.axis('off')
+
+# Blur
+plt.subplot(2, 3, 4)
+plt.imshow(cv2.cvtColor(blur, cv2.COLOR_BGR2RGB))
+plt.title("4. Gaussian Blur")
+plt.axis('off')
+
+# Edge Detection
+plt.subplot(2, 3, 5)
+plt.imshow(edges, cmap='gray')
+plt.title("5. Edge Detection (Canny)")
+plt.axis('off')
+
+# Brightness
+plt.subplot(2, 3, 6)
+plt.imshow(cv2.cvtColor(bright, cv2.COLOR_BGR2RGB))
+plt.title("6. Brightness +50%")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 7. SAVE ALL RESULTS
+print("\n--- 7. SAVE RESULTS ---")
+cv2.imwrite('result_grayscale.jpg', gray)
+cv2.imwrite('result_blur.jpg', blur)
+cv2.imwrite('result_edges.jpg', edges)
+cv2.imwrite('result_bright.jpg', bright)
+print("Saved: result_grayscale.jpg, result_blur.jpg, result_edges.jpg, result_bright.jpg")
+
+print("\n✅ DAY 3 COMPLETE!")
