@@ -1,0 +1,77 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+print("=" * 50)
+print("DAY 3 - OPENCV BASICS")
+print("4 June 2026")
+print("=" * 50)
+
+# 1. READ IMAGE
+print("\n--- 1. READ IMAGE ---")
+# Upload your image first or use a sample
+# For testing without image, create a sample
+sample_image = np.random.randint(0, 255, (300, 300, 3), dtype=np.uint8)
+cv2.imwrite('sample.jpg', sample_image)
+print("Sample image created: sample.jpg")
+
+# Read the image
+img = cv2.imread('sample.jpg')
+print("Image loaded successfully")
+print("Image shape (height, width, channels):", img.shape)
+
+# 2. CONVERT TO GRAYSCALE
+print("\n--- 2. CONVERT TO GRAYSCALE ---")
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+print("Grayscale image shape:", gray.shape)
+
+# 3. RESIZE IMAGE
+print("\n--- 3. RESIZE IMAGE ---")
+resized = cv2.resize(img, (150, 150))
+print("Original size:", img.shape)
+print("Resized size:", resized.shape)
+
+# 4. DISPLAY IMAGES USING MATPLOTLIB
+print("\n--- 4. DISPLAY IMAGES ---")
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 3, 1)
+plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+plt.title("Original Image")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(gray, cmap='gray')
+plt.title("Grayscale")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(cv2.cvtColor(resized, cv2.COLOR_BGR2RGB))
+plt.title("Resized (150x150)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 5. SAVE IMAGES
+print("\n--- 5. SAVE IMAGES ---")
+cv2.imwrite('output_grayscale.jpg', gray)
+cv2.imwrite('output_resized.jpg', resized)
+print("Images saved: output_grayscale.jpg, output_resized.jpg")
+
+# 6. YOUR TASK
+print("\n--- YOUR TASK ---")
+print("1. Upload a face image to Colab")
+print("2. Read the image using cv2.imread()")
+print("3. Convert it to grayscale")
+print("4. Resize it to 100x100 pixels")
+print("5. Save the result")
+
+# Write your code below:
+
+# Uncomment and edit this code:
+# my_img = cv2.imread('your_face_image.jpg')
+# my_gray = cv2.cvtColor(my_img, cv2.COLOR_BGR2GRAY)
+# my_resized = cv2.resize(my_gray, (100, 100))
+# cv2.imwrite('my_face_processed.jpg', my_resized)
+# print("Done! Your face image has been processed.")
