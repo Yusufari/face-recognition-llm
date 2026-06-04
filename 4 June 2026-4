@@ -1,0 +1,122 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+
+print("=" * 50)
+print("DAY 3 - OPENCV PRACTICE (VERSION B)")
+print("4 June 2026")
+print("Artificial Face Creation")
+print("=" * 50)
+
+# 1. CREATE A BLANK CANVAS
+print("\n--- 1. CREATE CANVAS ---")
+canvas = np.ones((400, 400, 3), dtype=np.uint8) * 255  # White background
+print("Canvas created: 400x400 white background")
+
+# 2. DRAW A FACE (Circle)
+print("\n--- 2. DRAW FACE ---")
+# Face (yellow circle)
+cv2.circle(canvas, (200, 200), 120, (0, 200, 255), -1)
+
+# 3. DRAW EYES
+print("\n--- 3. DRAW EYES ---")
+# Left eye
+cv2.circle(canvas, (150, 170), 20, (0, 0, 0), -1)
+cv2.circle(canvas, (150, 170), 8, (255, 255, 255), -1)
+
+# Right eye
+cv2.circle(canvas, (250, 170), 20, (0, 0, 0), -1)
+cv2.circle(canvas, (250, 170), 8, (255, 255, 255), -1)
+
+# 4. DRAW MOUTH
+print("\n--- 4. DRAW MOUTH ---")
+# Smile
+cv2.ellipse(canvas, (200, 250), (50, 30), 0, 0, 180, (0, 0, 0), 3)
+
+# 5. DRAW NOSE
+print("\n--- 5. DRAW NOSE ---")
+cv2.circle(canvas, (200, 210), 8, (0, 0, 0), -1)
+
+# 6. DRAW GLASSES (Bonus)
+print("\n--- 6. DRAW GLASSES (Bonus) ---")
+# Left glass
+cv2.rectangle(canvas, (110, 145), (190, 195), (0, 0, 0), 3)
+# Right glass
+cv2.rectangle(canvas, (210, 145), (290, 195), (0, 0, 0), 3)
+# Bridge
+cv2.line(canvas, (190, 170), (210, 170), (0, 0, 0), 3)
+
+# 7. DISPLAY THE FACE
+print("\n--- 7. DISPLAY ARTIFICIAL FACE ---")
+plt.figure(figsize=(6, 6))
+plt.imshow(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
+plt.title("Artificial Face Created with OpenCV")
+plt.axis('off')
+plt.show()
+
+# 8. APPLY OPENCV FUNCTIONS TO THIS FACE
+print("\n--- 8. APPLY OPENCV FUNCTIONS ---")
+
+# Convert to grayscale
+gray_face = cv2.cvtColor(canvas, cv2.COLOR_BGR2GRAY)
+
+# Blur the face
+blur_face = cv2.GaussianBlur(canvas, (15, 15), 0)
+
+# Edge detection
+edges_face = cv2.Canny(gray_face, 50, 150)
+
+# Resize
+resized_face = cv2.resize(canvas, (200, 200))
+
+# 9. DISPLAY ALL VARIATIONS
+print("\n--- 9. DISPLAY VARIATIONS ---")
+
+plt.figure(figsize=(12, 8))
+
+plt.subplot(2, 3, 1)
+plt.imshow(cv2.cvtColor(canvas, cv2.COLOR_BGR2RGB))
+plt.title("Original Face")
+plt.axis('off')
+
+plt.subplot(2, 3, 2)
+plt.imshow(gray_face, cmap='gray')
+plt.title("Grayscale")
+plt.axis('off')
+
+plt.subplot(2, 3, 3)
+plt.imshow(cv2.cvtColor(blur_face, cv2.COLOR_BGR2RGB))
+plt.title("Blurred Face")
+plt.axis('off')
+
+plt.subplot(2, 3, 4)
+plt.imshow(edges_face, cmap='gray')
+plt.title("Edge Detection")
+plt.axis('off')
+
+plt.subplot(2, 3, 5)
+plt.imshow(cv2.cvtColor(resized_face, cv2.COLOR_BGR2RGB))
+plt.title("Resized (200x200)")
+plt.axis('off')
+
+plt.subplot(2, 3, 6)
+# Inverted colors
+inverted = cv2.bitwise_not(canvas)
+plt.imshow(cv2.cvtColor(inverted, cv2.COLOR_BGR2RGB))
+plt.title("Inverted Colors")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 10. SAVE THE RESULTS
+print("\n--- 10. SAVE RESULTS ---")
+cv2.imwrite('artificial_face.jpg', canvas)
+cv2.imwrite('artificial_face_gray.jpg', gray_face)
+cv2.imwrite('artificial_face_edges.jpg', edges_face)
+print("Saved: artificial_face.jpg, artificial_face_gray.jpg, artificial_face_edges.jpg")
+
+print("\n" + "=" * 50)
+print("✅ DAY 3 COMPLETE!")
+print("You created an artificial face and applied OpenCV functions!")
+print("=" * 50)
