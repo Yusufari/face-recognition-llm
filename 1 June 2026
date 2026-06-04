@@ -1,0 +1,40 @@
+# Import library
+import numpy as np
+
+print("=== 1 June 2026 ===")
+# === LATIHAN 1: Membuat Array 1D ===
+print("=== ARRAY 1D ===")
+arr1 = np.array([1, 2, 3, 4, 5])
+print("Array 1D:", arr1)
+print("Shape:", arr1.shape)
+print("Dtype:", arr1.dtype)
+
+# === LATIHAN 2: Membuat Array 2D (Matriks) ===
+print("\n=== ARRAY 2D ===")
+arr2 = np.array([[1, 2, 3],
+                  [4, 5, 6],
+                  [7, 8, 9]])
+print("Array 2D:\n", arr2)
+print("Shape:", arr2.shape)
+
+# === LATIHAN 3: Operasi Matriks ===
+print("\n=== OPERASI MATRIKS ===")
+A = np.array([[1, 2], [3, 4]])
+B = np.array([[5, 6], [7, 8]])
+
+print("Matriks A:\n", A)
+print("Matriks B:\n", B)
+print("A + B:\n", A + B)
+print("A - B:\n", A - B)
+print("A * B (element-wise):\n", A * B)
+print("A dot B (perkalian matriks):\n", np.dot(A, B))
+
+# === LATIHAN 4: Array Khusus ===
+print("\n=== ARRAY KHUSUS ===")
+zeros = np.zeros((3, 3))      # matriks 3x3 berisi 0
+ones = np.ones((2, 4))        # matriks 2x4 berisi 1
+eye = np.eye(3)               # matriks identitas 3x3
+
+print("Zeros:\n", zeros)
+print("Ones:\n", ones)
+print("Identity:\n", eye)
