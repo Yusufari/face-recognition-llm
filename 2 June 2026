@@ -1,0 +1,73 @@
+import numpy as np
+
+print("=" * 40)
+print("DAY 1 - NUMPY BASICS")
+print("Tuesday - 02 June 2026")
+print("=" * 40)
+
+# 1. CREATE ARRAYS
+print("\n--- 1. CREATE ARRAYS ---")
+arr_1d = np.array([10, 20, 30, 40, 50])
+arr_2d = np.array([[1, 2, 3],
+                   [4, 5, 6],
+                   [7, 8, 9]])
+
+print("1D Array:", arr_1d)
+print("Shape:", arr_1d.shape)
+print("\n2D Array:")
+print(arr_2d)
+print("Shape:", arr_2d.shape)
+
+# 2. MATRIX OPERATIONS
+print("\n--- 2. MATRIX OPERATIONS ---")
+A = np.array([[2, 4],
+              [1, 3]])
+B = np.array([[5, 1],
+              [2, 2]])
+
+print("Matrix A:")
+print(A)
+print("Matrix B:")
+print(B)
+
+print("\nA + B:")
+print(A + B)
+
+print("\nA - B:")
+print(A - B)
+
+print("\nA * B (element-wise):")
+print(A * B)
+
+print("\nA dot B (matrix multiplication):")
+print(np.dot(A, B))
+
+# 3. SPECIAL ARRAYS
+print("\n--- 3. SPECIAL ARRAYS ---")
+zeros = np.zeros((3, 3))
+ones = np.ones((2, 4))
+identity = np.eye(3)
+random_arr = np.random.rand(3, 3)
+
+print("Zeros (3x3):")
+print(zeros)
+print("\nOnes (2x4):")
+print(ones)
+print("\nIdentity (3x3):")
+print(identity)
+print("\nRandom (3x3):")
+print(random_arr)
+
+# 4. YOUR TASK
+print("\n--- YOUR TASK ---")
+print("Create a 2x2 matrix with your favorite numbers")
+print("Then multiply it by itself (matrix dot product)")
+
+my_matrix = np.array([[2, 3],
+                      [4, 5]])
+
+result = np.dot(my_matrix, my_matrix)
+print("My Matrix:")
+print(my_matrix)
+print("Matrix multiplied by itself:")
+print(result)
