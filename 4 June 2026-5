@@ -1,0 +1,117 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 50)
+print("DAY 3 - IMAGE PREPROCESSING PIPELINE")
+print("4 June 2026")
+print("=" * 50)
+
+# 1. UPLOAD A FACE IMAGE
+print("\n--- STEP 1: UPLOAD FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {image_path}")
+
+# 2. READ IMAGE
+print("\n--- STEP 2: READ IMAGE ---")
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+print(f"Image size: {img.shape}")
+
+# 3. PREPROCESSING PIPELINE
+print("\n--- STEP 3: PREPROCESSING PIPELINE ---")
+
+# Step 3.1: Resize to standard size
+resized = cv2.resize(img, (224, 224))
+print("✓ Resized to 224x224")
+
+# Step 3.2: Convert to grayscale
+gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+print("✓ Converted to grayscale")
+
+# Step 3.3: Apply Gaussian blur (reduce noise)
+blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+print("✓ Applied Gaussian blur")
+
+# Step 3.4: Histogram equalization (improve contrast)
+equalized = cv2.equalizeHist(blurred)
+print("✓ Histogram equalization applied")
+
+# Step 3.5: Normalize pixel values (0 to 1)
+normalized = equalized / 255.0
+print("✓ Normalized pixel values (0-1)")
+
+# 4. DISPLAY EACH STEP
+print("\n--- STEP 4: VISUALIZE PIPELINE ---")
+
+plt.figure(figsize=(15, 8))
+
+plt.subplot(2, 3, 1)
+plt.imshow(img_rgb)
+plt.title("1. Original Image")
+plt.axis('off')
+
+plt.subplot(2, 3, 2)
+plt.imshow(cv2.cvtColor(resized, cv2.COLOR_BGR2RGB))
+plt.title("2. Resized (224x224)")
+plt.axis('off')
+
+plt.subplot(2, 3, 3)
+plt.imshow(gray, cmap='gray')
+plt.title("3. Grayscale")
+plt.axis('off')
+
+plt.subplot(2, 3, 4)
+plt.imshow(blurred, cmap='gray')
+plt.title("4. Gaussian Blur")
+plt.axis('off')
+
+plt.subplot(2, 3, 5)
+plt.imshow(equalized, cmap='gray')
+plt.title("5. Histogram Equalized")
+plt.axis('off')
+
+plt.subplot(2, 3, 6)
+plt.imshow(normalized, cmap='gray')
+plt.title("6. Normalized (0-1)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 5. SAVE PREPROCESSED IMAGE
+print("\n--- STEP 5: SAVE RESULT ---")
+cv2.imwrite('preprocessed_face.jpg', equalized)
+print("Saved: preprocessed_face.jpg")
+
+# 6. BONUS: FACE DETECTION (Simple)
+print("\n--- BONUS: SIMPLE FACE DETECTION ---")
+
+# Load pre-trained face detector
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+
+# Detect faces
+faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+
+print(f"Found {len(faces)} face(s) in the image")
+
+# Draw rectangle around face
+img_with_boxes = resized.copy()
+for (x, y, w, h) in faces:
+    cv2.rectangle(img_with_boxes, (x, y), (x+w, y+h), (0, 255, 0), 3)
+
+# Display
+plt.figure(figsize=(6, 6))
+plt.imshow(cv2.cvtColor(img_with_boxes, cv2.COLOR_BGR2RGB))
+plt.title(f"Face Detection - {len(faces)} face(s) found")
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 50)
+print("✅ DAY 3 COMPLETE!")
+print("You have built a complete image preprocessing pipeline!")
+print("=" * 50)
