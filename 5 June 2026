@@ -1,0 +1,98 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from skimage import exposure
+from google.colab import files
+
+print("=" * 50)
+print("DAY 4 - HOG FEATURE EXTRACTION")
+print("5 June 2026")
+print("=" * 50)
+
+# 1. UPLOAD A FACE IMAGE
+print("\n--- STEP 1: UPLOAD A FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {image_path}")
+
+# 2. READ AND PREPROCESS
+print("\n--- STEP 2: PREPROCESS IMAGE ---")
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Resize to standard size (HOG works better with fixed size)
+gray_resized = cv2.resize(gray, (313, 313))
+print(f"Image resized to 313x313")
+
+# 3. EXTRACT HOG FEATURES
+print("\n--- STEP 3: EXTRACT HOG FEATURES ---")
+
+# Extract HOG features and the HOG image
+hog_features, hog_image = hog(
+    gray_resized,
+    orientations=9,        # 9 directions (0-180 degrees)
+    pixels_per_cell=(8, 8), # 8x8 pixels per cell
+    cells_per_block=(2, 2), # 2x2 cells per block
+    visualize=True,
+    feature_vector=True
+)
+
+print(f"HOG feature vector length: {len(hog_features)}")
+print("This is the mathematical representation of your face shape!")
+
+# 4. VISUALIZE RESULTS
+print("\n--- STEP 4: VISUALIZE ---")
+
+# Enhance HOG image for better viewing
+hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 3, 1)
+plt.imshow(gray_resized, cmap='gray')
+plt.title("1. Original Face (Grayscale)")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(hog_image_rescaled, cmap='gray')
+plt.title("2. HOG Features (Edges & Shapes)")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+# Overlay HOG on original
+plt.imshow(gray_resized, cmap='gray')
+plt.imshow(hog_image_rescaled, cmap='hot', alpha=0.5)
+plt.title("3. HOG + Original (Overlay)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 5. EXPLAIN THE RESULT
+print("\n--- STEP 5: UNDERSTANDING THE OUTPUT ---")
+print(f"""
+What just happened:
+- Your face image was converted to {len(hog_features)} numbers
+- Each number represents the 'gradient direction' in a small region
+- Bright areas in the HOG image = strong edges (eyes, nose, mouth)
+- Dark areas = flat regions (cheeks, forehead)
+
+Why this matters for Baymax:
+- These numbers are what AI uses to recognize faces
+- Different faces create different HOG patterns
+- Your face has a unique HOG signature!
+""")
+
+# 6. SAVE THE HOG IMAGE
+print("\n--- STEP 6: SAVE RESULTS ---")
+cv2.imwrite('hog_visualization.jpg', (hog_image_rescaled * 255).astype(np.uint8))
+print("Saved: hog_visualization.jpg")
+
+print("\n" + "=" * 50)
+print("✅ DAY 4 COMPLETE!")
+print("You have extracted HOG features from a face image!")
+print("=" * 50)
