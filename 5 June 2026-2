@@ -1,0 +1,116 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from skimage import exposure
+from google.colab import files
+
+print("=" * 60)
+print("DAY 4 - HOG WITH ANGLES (VERSION C)")
+print("5 June 2026")
+print("=" * 60)
+
+# Upload multiple face images from different angles
+print("\n--- UPLOAD 3 FACE IMAGES (Different Angles) ---")
+print("Ideal: front, slight left, slight right")
+
+uploaded = files.upload()
+
+image_list = list(uploaded.keys())
+print(f"\nUploaded {len(image_list)} images: {image_list}")
+
+all_hog_features = []
+all_hog_images = []
+
+# Process each image
+for i, filename in enumerate(image_list):
+    print(f"\n--- Processing image {i+1}: {filename} ---")
+    
+    img = cv2.imread(filename)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    resized = cv2.resize(gray, (313, 313))
+    
+    features, hog_img = hog(
+        resized,
+        orientations=9,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=True,
+        feature_vector=True
+    )
+    
+    all_hog_features.append(features)
+    all_hog_images.append(exposure.rescale_intensity(hog_img, in_range=(0, 10)))
+    print(f"  Extracted {len(features)} features")
+
+# Compare all angles
+print("\n" + "=" * 60)
+print("--- COMPARING DIFFERENT ANGLES ---")
+print("=" * 60)
+
+# Calculate similarity matrix
+similarity_matrix = np.zeros((len(image_list), len(image_list)))
+
+for i in range(len(image_list)):
+    for j in range(len(image_list)):
+        distance = np.sqrt(np.sum((all_hog_features[i] - all_hog_features[j]) ** 2))
+        similarity_matrix[i, j] = distance
+
+print("\nSimilarity Matrix (smaller number = more similar):")
+print("     ", end="")
+for i in range(len(image_list)):
+    print(f"  Img{i+1} ", end="")
+print()
+for i in range(len(image_list)):
+    print(f"Img{i+1} ", end="")
+    for j in range(len(image_list)):
+        print(f" {similarity_matrix[i, j]:6.1f}", end="")
+    print()
+
+# VISUALIZE ALL IMAGES AND THEIR HOG
+print("\n" + "=" * 60)
+print("--- VISUALIZATION: ALL ANGLES ---")
+print("=" * 60)
+
+rows = len(image_list)
+plt.figure(figsize=(12, rows * 3))
+
+for i in range(rows):
+    # Load original for display
+    img = cv2.imread(image_list[i])
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_resized = cv2.resize(img_rgb, (313, 313))
+    
+    # Original
+    plt.subplot(rows, 3, i*3 + 1)
+    plt.imshow(img_resized)
+    plt.title(f"Angle {i+1}: Original")
+    plt.axis('off')
+    
+    # HOG
+    plt.subplot(rows, 3, i*3 + 2)
+    plt.imshow(all_hog_images[i], cmap='gray')
+    plt.title(f"Angle {i+1}: HOG")
+    plt.axis('off')
+    
+    # Overlay
+    plt.subplot(rows, 3, i*3 + 3)
+    plt.imshow(img_resized)
+    plt.imshow(all_hog_images[i], cmap='hot', alpha=0.4)
+    plt.title(f"Angle {i+1}: Overlay")
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print("\n" + "=" * 60)
+print("--- LESSON LEARNED ---")
+print("""
+Different angles of the same face produce different HOG features!
+This is why face recognition needs:
+1. Multiple training images (different angles)
+2. Robust algorithms that handle angle variations
+""")
+
+print("\n✅ DAY 4 - VERSION C COMPLETE!")
+print("=" * 60)
