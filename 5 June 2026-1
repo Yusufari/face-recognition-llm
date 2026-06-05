@@ -1,0 +1,172 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from skimage import exposure, data
+from google.colab import files
+
+print("=" * 60)
+print("DAY 4 - HOG FEATURE EXTRACTION (VERSION B)")
+print("5 June 2026")
+print("=" * 60)
+
+# OPTION 1: Use sample face from skimage library
+print("\n--- OPTION 1: USING SAMPLE FACE FROM LIBRARY ---")
+print("Loading sample astronaut face (built-in dataset)...")
+sample_face = data.astronaut()
+sample_gray = cv2.cvtColor(sample_face, cv2.COLOR_RGB2GRAY)
+sample_resized = cv2.resize(sample_gray, (313, 313))
+
+print("Sample face loaded successfully!")
+
+# Extract HOG from sample face
+hog_features_sample, hog_image_sample = hog(
+    sample_resized,
+    orientations=9,
+    pixels_per_cell=(8, 8),
+    cells_per_block=(2, 2),
+    visualize=True,
+    feature_vector=True
+)
+
+print(f"Sample face HOG features: {len(hog_features_sample)} numbers")
+
+# OPTION 2: Upload your own face
+print("\n" + "=" * 60)
+print("--- OPTION 2: OR UPLOAD YOUR OWN FACE IMAGE ---")
+choice = input("Type 'sample' to use sample face, or 'upload' to upload your own: ")
+
+if choice.lower() == 'upload':
+    print("\nPlease upload a face image:")
+    uploaded = files.upload()
+    
+    for filename in uploaded.keys():
+        image_path = filename
+        print(f"Loaded: {image_path}")
+    
+    img = cv2.imread(image_path)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray_resized = cv2.resize(gray, (313, 313))
+    
+    # Extract HOG from your face
+    hog_features, hog_image = hog(
+        gray_resized,
+        orientations=9,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=True,
+        feature_vector=True
+    )
+    
+    print(f"\nYour face HOG features: {len(hog_features)} numbers")
+    
+else:
+    gray_resized = sample_resized
+    hog_features = hog_features_sample
+    hog_image = hog_image_sample
+    print("\nUsing sample astronaut face")
+
+# DISPLAY COMPARISON
+print("\n" + "=" * 60)
+print("--- VISUALIZATION: ORIGINAL VS HOG ---")
+print("=" * 60)
+
+# Enhance HOG image
+hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
+
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 4, 1)
+plt.imshow(gray_resized, cmap='gray')
+plt.title("1. Original Face\n(Grayscale)")
+plt.axis('off')
+
+plt.subplot(1, 4, 2)
+plt.imshow(hog_image_rescaled, cmap='gray')
+plt.title("2. HOG Features\n(Edges & Shapes)")
+plt.axis('off')
+
+plt.subplot(1, 4, 3)
+plt.imshow(gray_resized, cmap='gray')
+plt.imshow(hog_image_rescaled, cmap='hot', alpha=0.4)
+plt.title("3. Overlay\n(Original + HOG)")
+plt.axis('off')
+
+# Histogram of HOG features
+plt.subplot(1, 4, 4)
+plt.hist(hog_features, bins=30, color='blue', alpha=0.7)
+plt.title("4. HOG Feature\nDistribution")
+plt.xlabel("Feature Value")
+plt.ylabel("Frequency")
+
+plt.tight_layout()
+plt.show()
+
+# EXPLANATION
+print("\n" + "=" * 60)
+print("--- WHAT DO THESE NUMBERS MEAN? ---")
+print("=" * 60)
+
+print(f"""
+Your face is now represented by {len(hog_features)} numbers.
+
+How HOG works step by step:
+1. Image divided into small cells (8x8 pixels)
+2. Each cell: count how many edges in each direction
+3. 9 directions: 0°, 20°, 40°, 60°, 80°, 100°, 120°, 140°, 160°
+4. Each cell produces 9 numbers
+5. All cells combined = {len(hog_features)} total numbers
+
+For Baymax:
+- These numbers are like a "fingerprint" for your face
+- Baymax compares these numbers to recognize you
+- Different angles = different HOG patterns
+""")
+
+# BONUS: COMPARE TWO IMAGES
+print("\n" + "=" * 60)
+print("--- BONUS: COMPARE TWO FACES ---")
+print("=" * 60)
+
+print("\nIf you uploaded your face, let's see how different it looks.")
+
+if choice.lower() == 'upload':
+    # Load sample face for comparison
+    test_face = data.astronaut()
+    test_gray = cv2.cvtColor(test_face, cv2.COLOR_RGB2GRAY)
+    test_resized = cv2.resize(test_gray, (128, 128))
+    
+    test_features, _ = hog(
+        test_resized,
+        orientations=9,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=True,
+        feature_vector=True
+    )
+    
+    # Calculate similarity (Euclidean distance)
+    distance = np.sqrt(np.sum((hog_features - test_features) ** 2))
+    print(f"\nDistance between YOUR face and SAMPLE face: {distance:.2f}")
+    print("(Smaller number = more similar faces)")
+    
+    if distance < 100:
+        print("→ Your face is SIMILAR to the sample face")
+    else:
+        print("→ Your face is DIFFERENT from the sample face")
+        
+    # Find strongest features
+    print("\n--- STRONGEST FEATURES IN YOUR FACE ---")
+    top_indices = np.argsort(hog_features)[-5:][::-1]
+    top_values = hog_features[top_indices]
+    
+    for i, (idx, val) in enumerate(zip(top_indices, top_values)):
+        print(f"  {i+1}. Feature {idx}: {val:.2f} (strong edge detected)")
+        
+else:
+    print("\nYou used the sample face. Upload your own face to see comparison!")
+
+print("\n" + "=" * 60)
+print("✅ DAY 4 - VERSION B COMPLETE!")
+print("=" * 60)
