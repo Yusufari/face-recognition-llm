@@ -1,0 +1,168 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import os
+
+print("=" * 60)
+print("DAY 6 - FACE RECOGNITION (CORRECTED)")
+print("7 Juni 2026")
+print("=" * 60)
+
+# 1. INSTALL face_recognition LIBRARY
+print("\n--- STEP 1: INSTALLING face_recognition ---")
+!pip install face_recognition > /dev/null 2>&1
+import face_recognition
+print("✓ face_recognition library installed!")
+
+# 2. UPLOAD A FACE IMAGE (Training)
+print("\n--- STEP 2: UPLOAD YOUR FACE (Training) ---")
+print("This will be used to 'teach' the system what you look like")
+uploaded_train = files.upload()
+
+for filename in uploaded_train.keys():
+    train_image_path = filename
+    print(f"Training image: {filename}")
+
+# 3. UPLOAD ANOTHER IMAGE (Testing)
+print("\n--- STEP 3: UPLOAD ANOTHER IMAGE (Testing) ---")
+print("This can be another photo of you OR a different person")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_image_path = filename
+    print(f"Testing image: {filename}")
+
+# 4. ENCODE THE TRAINING IMAGE
+print("\n--- STEP 4: ENCODE TRAINING FACE ---")
+train_image = face_recognition.load_image_file(train_image_path)
+train_encodings = face_recognition.face_encodings(train_image)
+
+if len(train_encodings) > 0:
+    train_encoding = train_encodings[0]
+    train_has_face = True
+    print(f"✓ Training face encoded! (Found 1 face)")
+else:
+    train_encoding = None
+    train_has_face = False
+    print("❌ No face found in training image. Please upload a clear face photo.")
+
+# 5. ENCODE THE TESTING IMAGE
+print("\n--- STEP 5: ENCODE TESTING FACE ---")
+test_image = face_recognition.load_image_file(test_image_path)
+test_encodings = face_recognition.face_encodings(test_image)
+
+if len(test_encodings) > 0:
+    test_encoding = test_encodings[0]
+    test_has_face = True
+    print(f"✓ Testing face encoded! (Found 1 face)")
+else:
+    test_encoding = None
+    test_has_face = False
+    print("❌ No face found in testing image.")
+
+# 6. COMPARE FACES
+print("\n--- STEP 6: COMPARE FACES ---")
+
+# Initialize variables
+is_same_person = False
+distance = 999.0
+
+if train_has_face and test_has_face:
+    # Calculate distance (smaller = more similar)
+    distance = np.linalg.norm(train_encoding - test_encoding)
+    
+    # Check if faces match
+    results = face_recognition.compare_faces([train_encoding], test_encoding)
+    is_same_person = results[0]
+    
+    print(f"\nResults:")
+    print(f"  Distance between faces: {distance:.4f}")
+    print(f"  Same person: {is_same_person}")
+    
+    # Threshold explanation
+    threshold = 0.6
+    if distance < threshold:
+        print(f"\n✓ RESULT: SAME PERSON!")
+        print(f"  (Distance {distance:.4f} < {threshold})")
+        print(f"  ✅ Baymax recognizes you!")
+    else:
+        print(f"\n✗ RESULT: DIFFERENT PERSON!")
+        print(f"  (Distance {distance:.4f} > {threshold})")
+        print(f"  ❌ This is not you.")
+else:
+    print("Cannot compare: missing face encoding from one or both images")
+
+# 7. VISUALIZE BOTH IMAGES (FIXED)
+print("\n--- STEP 7: VISUALIZATION ---")
+
+plt.figure(figsize=(12, 6))
+
+# Training image
+plt.subplot(1, 2, 1)
+train_display = cv2.cvtColor(cv2.imread(train_image_path), cv2.COLOR_BGR2RGB)
+plt.imshow(train_display)
+plt.title("TRAINING IMAGE\n(What Baymax learns)", fontsize=12)
+plt.axis('off')
+
+# Testing image
+plt.subplot(1, 2, 2)
+test_display = cv2.cvtColor(cv2.imread(test_image_path), cv2.COLOR_BGR2RGB)
+plt.imshow(test_display)
+
+# FIXED: Use boolean flags instead of checking arrays directly
+if train_has_face and test_has_face and is_same_person:
+    title = "TESTING IMAGE\n(Baymax says: IT'S YOU! ✅)"
+elif train_has_face and test_has_face and not is_same_person:
+    title = "TESTING IMAGE\n(Baymax says: UNKNOWN PERSON ❌)"
+elif not train_has_face:
+    title = "TESTING IMAGE\n(No face in training image)"
+elif not test_has_face:
+    title = "TESTING IMAGE\n(No face detected)"
+else:
+    title = "TESTING IMAGE\n(Unknown error)"
+
+plt.title(title, fontsize=12)
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 8. SUMMARY
+print("\n" + "=" * 60)
+print("--- SUMMARY ---")
+print("=" * 60)
+
+if train_has_face and test_has_face:
+    if is_same_person:
+        print("""
+✅ SUCCESS! Your face recognition is working!
+
+How Baymax uses this:
+1. Baymax sees a face
+2. Baymax encodes it into 128 numbers
+3. Baymax compares with saved faces
+4. Baymax says: "Hello Yusuf!"
+
+You have built the CORE of Baymax's recognition system!
+""")
+    else:
+        print("""
+The program correctly identified that these are DIFFERENT people.
+
+This is good! Baymax should only recognize you,
+not strangers.
+
+Try again with two different photos of YOURSELF
+to see Baymax recognize you!
+""")
+else:
+    print("""
+Please try again with:
+1. Clear face photo (good lighting, looking straight at camera)
+2. Face should be clearly visible
+3. No sunglasses or mask
+""")
+
+print("✅ DAY 6 COMPLETE!")
+print("=" * 60)
