@@ -1,0 +1,87 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import face_recognition
+
+print("=" * 60)
+print("DAY 6 - VERSION B")
+print("7 June 2026")
+print("Recognize Multiple People")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition > /dev/null 2>&1
+print("✓ Library ready")
+
+# 2. UPLOAD KNOWN FACES (2-3 orang)
+print("\n--- UPLOAD FACES YOU WANT BAYMAX TO KNOW ---")
+print("Upload 2-3 different people (or same person different photos)")
+uploaded_known = files.upload()
+
+known_encodings = []
+known_names = []
+
+for filename in uploaded_known.keys():
+    img = face_recognition.load_image_file(filename)
+    encodings = face_recognition.face_encodings(img)
+    
+    if len(encodings) > 0:
+        known_encodings.append(encodings[0])
+        # Use filename without extension as name
+        name = filename.split('.')[0]
+        known_names.append(name)
+        print(f"✓ Added: {name}")
+    else:
+        print(f"❌ No face found in: {filename}")
+
+print(f"\nTotal known faces: {len(known_encodings)}")
+
+# 3. UPLOAD TEST IMAGE
+print("\n--- UPLOAD TEST IMAGE ---")
+print("Upload a photo that may contain faces you know")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_path = filename
+
+# 4. PROCESS TEST IMAGE
+test_img = face_recognition.load_image_file(test_path)
+test_locations = face_recognition.face_locations(test_img)
+test_encodings = face_recognition.face_encodings(test_img, test_locations)
+
+print(f"\nFound {len(test_encodings)} face(s) in test image")
+
+# 5. DRAW RESULTS
+test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+
+for i, (location, encoding) in enumerate(zip(test_locations, test_encodings)):
+    # Compare with known faces
+    matches = face_recognition.compare_faces(known_encodings, encoding)
+    distances = face_recognition.face_distance(known_encodings, encoding)
+    
+    name = "UNKNOWN"
+    color = (0, 0, 255)  # Red for unknown
+    
+    if True in matches:
+        match_index = np.argmin(distances)
+        name = known_names[match_index]
+        color = (0, 255, 0)  # Green for known
+    
+    # Draw box and name
+    top, right, bottom, left = location
+    cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+    cv2.putText(test_display, name, (left, top-10), 
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+    print(f"  Face {i+1}: {name}")
+
+# 6. DISPLAY
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+plt.title("Face Recognition Results", fontsize=14)
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print("✅ DAY 6 - VERSION B DONE!")
+print("=" * 60)
