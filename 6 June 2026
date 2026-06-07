@@ -1,0 +1,102 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 50)
+print("DAY 5 - FACE DETECTION WITH HAAR CASCADE")
+print("6 Juni 2026")
+print("=" * 50)
+
+# 1. UPLOAD A FACE IMAGE
+print("\n--- STEP 1: UPLOAD A FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {image_path}")
+
+# 2. READ IMAGE
+print("\n--- STEP 2: READ IMAGE ---")
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+print(f"Image size: {img.shape}")
+
+# 3. LOAD HAAR CASCADE CLASSIFIER
+print("\n--- STEP 3: LOAD FACE DETECTOR ---")
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+print("Face detector loaded!")
+
+# 4. DETECT FACES
+print("\n--- STEP 4: DETECT FACES ---")
+faces = face_cascade.detectMultiScale(
+    gray,
+    scaleFactor=1.1,      # How much image size reduced each scale
+    minNeighbors=5,       # How many neighbors each rectangle needs
+    minSize=(30, 30)      # Minimum face size
+)
+
+print(f"Found {len(faces)} face(s)")
+
+# 5. DRAW RECTANGLES AROUND FACES
+print("\n--- STEP 5: DRAW BOUNDING BOXES ---")
+img_with_boxes = img_rgb.copy()
+
+for (x, y, w, h) in faces:
+    cv2.rectangle(img_with_boxes, (x, y), (x+w, y+h), (0, 255, 0), 3)
+    cv2.putText(img_with_boxes, "Face", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+    print(f"  Face at: x={x}, y={y}, width={w}, height={h}")
+
+# 6. DISPLAY RESULT
+print("\n--- STEP 6: DISPLAY RESULT ---")
+plt.figure(figsize=(10, 8))
+
+plt.subplot(1, 2, 1)
+plt.imshow(img_rgb)
+plt.title("Original Image")
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.imshow(img_with_boxes)
+plt.title(f"Face Detection - {len(faces)} Face(s)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 7. TRY DIFFERENT PARAMETERS
+print("\n--- BONUS: TRY DIFFERENT SETTINGS ---")
+print("\nTrying more sensitive detection (scaleFactor=1.05):")
+
+faces_sensitive = face_cascade.detectMultiScale(gray, scaleFactor=1.05, minNeighbors=5, minSize=(30, 30))
+print(f"Found {len(faces_sensitive)} face(s) with more sensitive settings")
+
+img_sensitive = img_rgb.copy()
+for (x, y, w, h) in faces_sensitive:
+    cv2.rectangle(img_sensitive, (x, y), (x+w, y+h), (255, 0, 200), 2)
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.imshow(img_with_boxes)
+plt.title(f"Normal (scaleFactor=1.1): {len(faces)} faces")
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.imshow(img_sensitive)
+plt.title(f"Sensitive (scaleFactor=1.05): {len(faces_sensitive)} faces")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 8. SAVE RESULT
+print("\n--- STEP 7: SAVE RESULT ---")
+cv2.imwrite('face_detection_result.jpg', cv2.cvtColor(img_with_boxes, cv2.COLOR_RGB2BGR))
+print("Saved: face_detection_result.jpg")
+
+print("\n" + "=" * 50)
+print("✅ DAY 5 COMPLETE!")
+print("Your face detection program is working!")
+print("=" * 50)
