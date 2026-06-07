@@ -1,0 +1,111 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import time
+
+print("=" * 60)
+print("DAY 5 - FACE DETECTION (VERSION B)")
+print("6 Juni 2026")
+print("Multiple Image Processing")
+print("=" * 60)
+
+# 1. UPLOAD MULTIPLE IMAGES
+print("\n--- STEP 1: UPLOAD 3-5 FACE IMAGES ---")
+print("(Different angles, different people, or different lighting)")
+uploaded = files.upload()
+
+image_list = list(uploaded.keys())
+print(f"\nUploaded {len(image_list)} images")
+
+# 2. LOAD FACE DETECTOR
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+eye_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_eye.xml')
+smile_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_smile.xml')
+
+print("Detectors loaded: Face, Eye, Smile")
+
+# 3. PROCESS EACH IMAGE
+print("\n--- STEP 2: PROCESSING IMAGES ---")
+
+results = []
+
+for idx, filename in enumerate(image_list):
+    print(f"\nProcessing image {idx+1}: {filename}")
+    
+    # Read image
+    img = cv2.imread(filename)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    # Detect faces
+    faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    print(f"  Found {len(faces)} face(s)")
+    
+    # For each face, detect eyes and smile
+    face_details = []
+    for (x, y, w, h) in faces:
+        face_roi = gray[y:y+h, x:x+w]
+        
+        # Detect eyes within face
+        eyes = eye_cascade.detectMultiScale(face_roi, 1.1, 5)
+        
+        # Detect smile within face
+        smiles = smile_cascade.detectMultiScale(face_roi, 1.1, 15)
+        
+        face_details.append({
+            'position': (x, y, w, h),
+            'eyes': len(eyes),
+            'smile': len(smiles)
+        })
+        print(f"    Face {len(face_details)}: {len(eyes)} eye(s), {len(smiles)} smile(s)")
+    
+    results.append({
+        'filename': filename,
+        'image': img_rgb,
+        'faces': faces,
+        'details': face_details
+    })
+
+# 4. DISPLAY ALL RESULTS
+print("\n--- STEP 3: DISPLAY RESULTS ---")
+
+for idx, result in enumerate(results):
+    img_display = result['image'].copy()
+    faces = result['faces']
+    details = result['details']
+    
+    for i, ((x, y, w, h), detail) in enumerate(zip(faces, details)):
+        # Draw face rectangle
+        cv2.rectangle(img_display, (x, y), (x+w, y+h), (0, 255, 0), 3)
+        
+        # Add label
+        label = f"Face {i+1} (Eyes:{detail['eyes']}, Smile:{detail['smile']})"
+        cv2.putText(img_display, label, (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+    
+    plt.figure(figsize=(8, 6))
+    plt.imshow(img_display)
+    plt.title(f"{result['filename']} - {len(faces)} face(s)")
+    plt.axis('off')
+    plt.show()
+
+# 5. SUMMARY REPORT
+print("\n" + "=" * 60)
+print("--- SUMMARY REPORT ---")
+print("=" * 60)
+
+total_faces = sum(len(r['faces']) for r in results)
+total_eyes = sum(sum(d['eyes'] for d in r['details']) for r in results)
+total_smiles = sum(sum(d['smile'] for d in r['details']) for r in results)
+
+print(f"""
+Total images processed: {len(results)}
+Total faces detected: {total_faces}
+Total eyes detected: {total_eyes}
+Total smiles detected: {total_smiles}
+
+Average eyes per face: {total_eyes/total_faces if total_faces > 0 else 0:.1f}
+Average smiles per face: {total_smiles/total_faces if total_faces > 0 else 0:.1f}
+""")
+
+print("\n✅ DAY 5 - VERSION B COMPLETE!")
