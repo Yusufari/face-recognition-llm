@@ -1,0 +1,64 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import face_recognition
+
+print("=" * 60)
+print("DAY 6 - VERSION C")
+print("7 June 2026")
+print("Webcam Simulation with Multiple Images")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition > /dev/null 2>&1
+
+# 2. UPLOAD YOUR FACE (TRAINING)
+print("\n--- STEP 1: UPLOAD YOUR FACE ---")
+print("Baymax will learn YOUR face")
+uploaded_me = files.upload()
+
+for filename in uploaded_me.keys():
+    my_img = face_recognition.load_image_file(filename)
+    my_encoding = face_recognition.face_encodings(my_img)[0]
+    print(f"✓ Baymax learned: {filename}")
+
+# 3. UPLOAD MULTIPLE TEST IMAGES
+print("\n--- STEP 2: UPLOAD TEST IMAGES ---")
+print("Upload 3-5 photos (some of you, some of others)")
+uploaded_tests = files.upload()
+
+print("\n--- RESULTS ---")
+results = []
+
+for filename in uploaded_tests.keys():
+    test_img = face_recognition.load_image_file(filename)
+    test_encodings = face_recognition.face_encodings(test_img)
+    
+    if len(test_encodings) > 0:
+        distance = np.linalg.norm(my_encoding - test_encodings[0])
+        is_me = distance < 0.6
+        
+        results.append({
+            'name': filename,
+            'is_me': is_me,
+            'distance': distance
+        })
+        
+        if is_me:
+            print(f"✅ {filename}: BAYMAX SAYS IT'S YOU! (distance: {distance:.3f})")
+        else:
+            print(f"❌ {filename}: Unknown person (distance: {distance:.3f})")
+    else:
+        print(f"⚠️ {filename}: No face detected")
+
+# 4. SUMMARY
+print("\n" + "=" * 60)
+print("--- SUMMARY ---")
+print("=" * 60)
+
+correct = sum(1 for r in results if r['is_me'])
+total = len(results)
+print(f"Baymax recognized you in {correct} out of {total} test images")
+
+print("\n✅ DAY 6 - VERSION C DONE!")
