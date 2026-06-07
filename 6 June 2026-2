@@ -1,0 +1,107 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 60)
+print("DAY 5 - FACE DETECTION (VERSION C)")
+print("6 June 2026")
+print("Comparing Different Cascades")
+print("=" * 60)
+
+# 1. UPLOAD AN IMAGE
+print("\n--- STEP 1: UPLOAD AN IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {image_path}")
+
+# 2. READ IMAGE
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# 3. LOAD MULTIPLE CASCADES
+print("\n--- STEP 2: LOADING CASCADES ---")
+
+cascades = {
+    'Front Face': cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'),
+    'Front Face (Alt)': cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_alt.xml'),
+    'Profile Face': cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_profileface.xml'),
+    'Upper Body': cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_upperbody.xml'),
+    'Full Body': cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fullbody.xml')
+}
+
+print(f"Loaded {len(cascades)} detectors")
+
+# 4. DETECT WITH EACH CASCADE
+print("\n--- STEP 3: DETECTING WITH EACH CASCADE ---")
+
+detection_results = {}
+
+for name, cascade in cascades.items():
+    if cascade.empty():
+        print(f"  {name}: Failed to load")
+        detection_results[name] = []
+        continue
+    
+    objects = cascade.detectMultiScale(gray, 1.1, 5)
+    detection_results[name] = objects
+    print(f"  {name}: Found {len(objects)} object(s)")
+
+# 5. VISUALIZE ALL RESULTS
+print("\n--- STEP 4: VISUALIZE RESULTS ---")
+
+# Calculate grid size
+num_detectors = len([r for r in detection_results.values() if len(r) > 0])
+if num_detectors == 0:
+    print("No objects detected with any cascade!")
+else:
+    # Create figure
+    fig, axes = plt.subplots(2, 3, figsize=(15, 10))
+    axes = axes.flatten()
+    
+    plot_idx = 0
+    for name, objects in detection_results.items():
+        if plot_idx >= 6:
+            break
+            
+        img_copy = img_rgb.copy()
+        
+        for (x, y, w, h) in objects:
+            color = (0, 255, 0) if 'Face' in name else (255, 0, 0)
+            cv2.rectangle(img_copy, (x, y), (x+w, y+h), color, 3)
+            
+        axes[plot_idx].imshow(img_copy)
+        axes[plot_idx].set_title(f"{name}\n({len(objects)} detected)")
+        axes[plot_idx].axis('off')
+        plot_idx += 1
+    
+    # Hide unused subplots
+    for i in range(plot_idx, 6):
+        axes[i].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+
+# 6. BEST CASCADE ANALYSIS
+print("\n--- STEP 5: WHICH CASCADE IS BEST? ---")
+
+best_cascade = max(detection_results.items(), key=lambda x: len(x[1]))
+print(f"""
+Best cascade for this image: {best_cascade[0]}
+Number detected: {len(best_cascade[1])}
+
+Why this matters:
+- Front Face cascade = good for straight-on photos
+- Profile Face cascade = good for side photos
+- Upper Body cascade = good when face is partially hidden
+
+For your Baymax project:
+- Use Front Face for normal interaction
+- Use Profile Face if person turns head
+- Combine multiple cascades for best results
+""")
+
+print("\n✅ DAY 5 - VERSION C COMPLETE!")
