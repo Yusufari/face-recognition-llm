@@ -1,0 +1,147 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 60)
+print("DAY 5 - FACE DETECTION (VERSION D)")
+print("6 Juni 2026")
+print("DIY Simple Face Detector - Understanding the Concept")
+print("=" * 60)
+
+# 1. UPLOAD AN IMAGE
+print("\n--- STEP 1: UPLOAD A CLEAR FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {filename}")
+
+# 2. READ IMAGE
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+print(f"Image size: {gray.shape}")
+
+# 3. SIMPLE FACE DETECTION USING SKIN COLOR
+print("\n--- STEP 2: SKIN COLOR DETECTION ---")
+
+# Convert to HSV color space (better for skin detection)
+hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+# Skin color range in HSV
+lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+upper_skin = np.array([20, 255, 255], dtype=np.uint8)
+
+# Create mask for skin color
+skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
+
+# Apply morphological operations to clean up
+kernel = np.ones((5, 5), np.uint8)
+skin_mask = cv2.morphologyEx(skin_mask, cv2.MORPH_OPEN, kernel)
+skin_mask = cv2.morphologyEx(skin_mask, cv2.MORPH_CLOSE, kernel)
+
+print(f"Skin pixels detected: {np.sum(skin_mask > 0)}")
+
+# 4. FIND CONTOURS (BLOBS OF SKIN)
+print("\n--- STEP 3: FIND SKIN BLOBS ---")
+contours, _ = cv2.findContours(skin_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+print(f"Found {len(contours)} skin regions")
+
+# Filter contours by size (face should be a certain size)
+min_face_area = 2000
+max_face_area = gray.shape[0] * gray.shape[1] * 0.5
+
+face_candidates = []
+for contour in contours:
+    area = cv2.contourArea(contour)
+    if min_face_area < area < max_face_area:
+        x, y, w, h = cv2.boundingRect(contour)
+        # Face should be roughly square-ish (width/height ratio between 0.7 and 1.3)
+        aspect_ratio = w / h
+        if 0.7 < aspect_ratio < 1.3:
+            face_candidates.append((x, y, w, h))
+
+print(f"Face candidates after filtering: {len(face_candidates)}")
+
+# 5. DRAW RESULTS
+print("\n--- STEP 4: DRAW CANDIDATE FACES ---")
+
+img_result = img_rgb.copy()
+
+for (x, y, w, h) in face_candidates:
+    cv2.rectangle(img_result, (x, y), (x+w, y+h), (0, 255, 0), 3)
+    cv2.putText(img_result, "Skin Region", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+# Also draw the skin mask
+plt.figure(figsize=(15, 5))
+
+plt.subplot(1, 3, 1)
+plt.imshow(img_rgb)
+plt.title("1. Original Image")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(skin_mask, cmap='gray')
+plt.title("2. Skin Color Mask")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(img_result)
+plt.title(f"3. Detected: {len(face_candidates)} Face Candidate(s)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 6. COMPARE WITH HAAR CASCADE
+print("\n--- STEP 5: COMPARE WITH HAAR CASCADE ---")
+
+# Load Haar cascade for comparison
+haar_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+haar_faces = haar_cascade.detectMultiScale(gray, 1.1, 5)
+
+print(f"Haar Cascade found: {len(haar_faces)} face(s)")
+
+img_haar = img_rgb.copy()
+for (x, y, w, h) in haar_faces:
+    cv2.rectangle(img_haar, (x, y), (x+w, y+h), (255, 0, 0), 3)
+    cv2.putText(img_haar, "Haar Face", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
+
+plt.figure(figsize=(12, 5))
+
+plt.subplot(1, 2, 1)
+plt.imshow(img_result)
+plt.title(f"Skin Detection: {len(face_candidates)} candidates")
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.imshow(img_haar)
+plt.title(f"Haar Cascade: {len(haar_faces)} faces")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 7. EXPLANATION
+print("\n" + "=" * 60)
+print("--- WHAT YOU JUST LEARNED ---")
+print("""
+Skin detection method:
+- Looks for skin-colored pixels
+- Groups them into blobs
+- Filters by size and shape
+
+Haar Cascade method:
+- Uses trained patterns (eyes, nose, mouth)
+- More accurate but slower
+- Requires training data
+
+For Baymax: Haar Cascade is better because it
+does not depend on skin color (works for all people)
+and is more reliable in different lighting.
+""")
+
+print("\n✅ DAY 5 - VERSION D COMPLETE!")
