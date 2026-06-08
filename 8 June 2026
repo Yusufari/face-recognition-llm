@@ -1,0 +1,109 @@
+import tensorflow as tf
+from tensorflow import keras
+import numpy as np
+import matplotlib.pyplot as plt
+
+print("=" * 60)
+print("DAY 7 - CNN FACE CLASSIFIER")
+print("8 Juni 2026")
+print("Introduction to Neural Networks")
+print("=" * 60)
+
+# 1. LOAD SAMPLE DATASET (MNIST - hand-written digits)
+print("\n--- STEP 1: LOAD DATASET ---")
+mnist = keras.datasets.mnist
+(x_train, y_train), (x_test, y_test) = mnist.load_data()
+
+print(f"Training images: {len(x_train)}")
+print(f"Test images: {len(x_test)}")
+print(f"Image size: {x_train[0].shape}")
+
+# 2. PREPROCESS DATA
+print("\n--- STEP 2: PREPROCESS ---")
+# Normalize pixel values (0 to 1)
+x_train = x_train / 255.0
+x_test = x_test / 255.0
+
+print("Pixel values normalized to 0-1 range")
+
+# 3. BUILD SIMPLE CNN
+print("\n--- STEP 3: BUILD CNN MODEL ---")
+model = keras.Sequential([
+    keras.layers.Flatten(input_shape=(28, 28)),  # Flatten 28x28 to 784
+    keras.layers.Dense(128, activation='relu'),   # Hidden layer
+    keras.layers.Dense(10, activation='softmax')  # Output layer (10 digits)
+])
+
+model.compile(
+    optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+model.summary()
+
+# 4. TRAIN THE MODEL
+print("\n--- STEP 4: TRAIN CNN ---")
+print("This will take 1-2 minutes...")
+
+history = model.fit(
+    x_train, y_train,
+    epochs=5,
+    validation_data=(x_test, y_test),
+    verbose=1
+)
+
+# 5. EVALUATE ACCURACY
+print("\n--- STEP 5: EVALUATE ---")
+test_loss, test_acc = model.evaluate(x_test, y_test, verbose=0)
+print(f"Test accuracy: {test_acc:.4f} ({test_acc*100:.1f}%)")
+
+# 6. VISUALIZE PREDICTIONS
+print("\n--- STEP 6: VISUALIZE ---")
+
+plt.figure(figsize=(12, 4))
+
+# Show 5 test images with predictions
+for i in range(5):
+    plt.subplot(1, 5, i+1)
+    plt.imshow(x_test[i], cmap='gray')
+    
+    prediction = np.argmax(model.predict(x_test[i:i+1], verbose=0))
+    actual = y_test[i]
+    
+    if prediction == actual:
+        color = 'green'
+    else:
+        color = 'red'
+    
+    plt.title(f"Predict: {prediction}\nActual: {actual}", color=color)
+    plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+# 7. EXPLANATION
+print("\n" + "=" * 60)
+print("--- WHAT YOU JUST LEARNED ---")
+print("""
+CNN learns to recognize patterns:
+
+Layer 1: Sees individual pixels
+Layer 2: Detects edges and lines
+Layer 3: Detects shapes (circles, corners)
+Layer 4: Detects complex patterns
+Layer 5: Recognizes the object
+
+For face recognition:
+- Same concept, but with face images
+- Millions of face examples
+- Much larger and deeper network
+""")
+
+print("\n✅ DAY 7 COMPLETE!")
+print("Your first neural network is working!")
+print("=" * 60)
+
+# 8. SAVE THE MODEL
+model.save('day7_digit_classifier.h5')
+print("\nModel saved: day7_digit_classifier.h5")
