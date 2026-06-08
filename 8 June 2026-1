@@ -1,0 +1,51 @@
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+from google.colab import files
+
+print("=" * 60)
+print("DAY 7 - VERSION B")
+print("8 Juni 2026")
+print("Understanding Face Data")
+print("=" * 60)
+
+# 1. UPLOAD A FACE IMAGE
+print("\n--- STEP 1: UPLOAD YOUR FACE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    img_path = filename
+    print(f"Loaded: {filename}")
+
+# 2. LOAD AND PROCESS
+from tensorflow.keras.preprocessing import image
+
+img = image.load_img(img_path, target_size=(100, 100))
+img_array = image.img_to_array(img)
+img_array = img_array / 255.0
+
+print(f"Image shape: {img_array.shape}")
+print("This is how CNN sees your face: as numbers between 0 and 1")
+
+# 3. VISUALIZE AS NUMBERS
+print("\n--- STEP 2: SEE THE NUMBERS ---")
+print("First 5x5 pixels of red channel:")
+print(img_array[0:5, 0:5, 0])
+
+# 4. SHOW THE IMAGE
+plt.figure(figsize=(6, 6))
+plt.imshow(img_array)
+plt.title("Your face (as CNN sees it)")
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print("""
+CNN does not see a 'face'
+CNN sees NUMBERS like above
+
+It learns patterns:
+- Dark pixels (low numbers) = edges
+- Bright pixels (high numbers) = light areas
+""")
+print("✅ DAY 7 - VERSION B DONE!")
