@@ -1,0 +1,98 @@
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+
+print("=" * 60)
+print("DAY 7 - VERSION E")
+print("8 Juni 2026")  
+print("VISUALIZE CNN LAYERS")
+print("=" * 60)
+
+# 1. CREATE ONE FAKE IMAGE
+print("\n--- STEP 1: CREATE ONE IMAGE ---")
+fake_image = np.array([
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 0, 1, 1, 1, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0]
+], dtype=np.float32)
+
+print("Fake image (7x7 pixels):")
+print(fake_image)
+
+# 2. CREATE A CNN LAYER
+print("\n--- STEP 2: CREATE A FILTER ---")
+filter_ = np.array([
+    [1, 0, -1],
+    [1, 0, -1],
+    [1, 0, -1]
+], dtype=np.float32)
+
+print("Filter (3x3):")
+print(filter_)
+
+# 3. APPLY FILTER MANUALLY
+print("\n--- STEP 3: APPLY FILTER ---")
+
+def apply_filter(image, filter_):
+    h, w = image.shape
+    fh, fw = filter_.shape
+    output_h = h - fh + 1
+    output_w = w - fw + 1
+    output = np.zeros((output_h, output_w))
+    
+    for i in range(output_h):
+        for j in range(output_w):
+            output[i, j] = np.sum(image[i:i+fh, j:j+fw] * filter_)
+    
+    return output
+
+result = apply_filter(fake_image, filter_)
+
+print("Result after applying filter:")
+print(result)
+
+# 4. VISUALIZE
+print("\n--- STEP 4: VISUALIZE ---")
+
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 3, 1)
+plt.imshow(fake_image, cmap='gray')
+plt.title("1. Original Image\n(Square shape)")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+filter_display = np.zeros((3, 3, 3))
+filter_display[:, :, 0] = filter_  # Red channel
+plt.imshow(filter_display)
+plt.title("2. Filter\n(Detects vertical edges)")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(result, cmap='gray')
+plt.title("3. Output\n(Strong response where\ngradient matches)")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print("\n" + "=" * 60)
+print("THIS IS HOW CNN LEARNS!")
+print("""
+CNN learns thousands of filters like this:
+- Some detect edges
+- Some detect corners
+- Some detect eyes
+- Some detect faces
+
+For face recognition:
+- First layers: edges and simple shapes
+- Middle layers: eyes, nose, mouth
+- Deep layers: whole face patterns
+""")
+print("✅ DAY 7 - VERSION E DONE!")
+print("=" * 60)
