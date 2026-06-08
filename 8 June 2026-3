@@ -1,0 +1,88 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+from sklearn.datasets import fetch_openml
+import warnings
+warnings.filterwarnings('ignore')
+
+print("=" * 60)
+print("DAY 7 - VERSION D")
+print("8 Juni 2026")
+print("Face Classification without TensorFlow")
+print("=" * 60)
+
+# 1. LOAD SMALL DATASET
+print("\n--- LOADING DATA (This takes 1 minute) ---")
+try:
+    from sklearn.datasets import load_digits
+    digits = load_digits()
+    X = digits.data
+    y = digits.target
+    
+    print(f"Data shape: {X.shape}")
+    print(f"Images: {len(X)}")
+    print(f"Image size: 8x8 pixels")
+    
+    # Split into train/test
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
+    
+    # 2. TRAIN RANDOM FOREST
+    print("\n--- TRAINING MODEL ---")
+    model = RandomForestClassifier(n_estimators=50, random_state=42)
+    model.fit(X_train, y_train)
+    
+    # 3. PREDICT
+    print("\n--- EVALUATING ---")
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Test Accuracy: {accuracy:.4f} ({accuracy*100:.1f}%)")
+    
+    # 4. VISUALIZE
+    print("\n--- VISUALIZATION ---")
+    fig, axes = plt.subplots(2, 5, figsize=(10, 4))
+    
+    for i, ax in enumerate(axes.flat):
+        ax.imshow(X_test[i].reshape(8, 8), cmap='gray')
+        pred = y_pred[i]
+        actual = y_test[i]
+        color = 'green' if pred == actual else 'red'
+        ax.set_title(f'P:{pred}', color=color)
+        ax.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    print(f"\n✅ Model Accuracy: {accuracy*100:.1f}%")
+    
+except Exception as e:
+    print(f"Note: {e}")
+    print("\nAlternative simple example:")
+    
+    # 2. CREATE SIMPLE SYNTHETIC DATA
+    print("\n--- CREATING FAKE DATA ---")
+    np.random.seed(42)
+    
+    # Create 1000 fake images (10x10 pixels)
+    n_samples = 1000
+    n_features = 100  # 10x10
+    X_fake = np.random.rand(n_samples, n_features)
+    y_fake = np.random.randint(0, 3, n_samples)  # 3 classes
+    
+    X_train_f, X_test_f, y_train_f, y_test_f = train_test_split(
+        X_fake, y_fake, test_size=0.2, random_state=42
+    )
+    
+    model_fake = RandomForestClassifier(n_estimators=20, random_state=42)
+    model_fake.fit(X_train_f, y_train_f)
+    acc = model_fake.score(X_test_f, y_test_f)
+    
+    print(f"Example with fake data: {acc:.2%} accuracy")
+    print("(This is just demonstration - real faces would need real data)")
+
+print("\n" + "=" * 60)
+print("✅ DAY 7 - VERSION D DONE!")
+print("=" * 60)
