@@ -1,0 +1,88 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 60)
+print("DAY 9 - FACE RECOGNITION + TEXT RESPONSE")
+print("10 Juni 2026")
+print("Baymax learns to TALK after recognizing you!")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+import face_recognition
+print("✓ Libraries ready")
+
+# 2. UPLOAD YOUR FACE
+print("\n--- STEP 1: TEACH BAYMAX YOUR FACE ---")
+print("Upload a clear photo of YOUR face")
+uploaded_me = files.upload()
+
+for filename in uploaded_me.keys():
+    my_img = face_recognition.load_image_file(filename)
+    my_encoding = face_recognition.face_encodings(my_img)
+
+if len(my_encoding) > 0:
+    my_encoding = my_encoding[0]
+    print("✓ Baymax learned YOUR face!")
+else:
+    print("❌ No face found. Please upload a clearer photo.")
+    my_encoding = None
+
+# 3. UPLOAD TEST IMAGE
+print("\n--- STEP 2: UPLOAD A TEST IMAGE ---")
+print("Upload a photo (you OR someone else)")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_path = filename
+
+# 4. RECOGNIZE
+test_img = face_recognition.load_image_file(test_path)
+test_encodings = face_recognition.face_encodings(test_img)
+
+responses = []
+
+if len(test_encodings) > 0 and my_encoding is not None:
+    test_encoding = test_encodings[0]
+    distance = np.linalg.norm(my_encoding - test_encoding)
+    is_me = distance < 0.6
+
+    if is_me:
+        responses.append("✅ Baymax: Hello Yusuf! You look great today!")
+        responses.append("✅ Baymax: How can I help you?")
+        title_result = "IT'S YOU! ✅"
+    else:
+        responses.append("❌ Baymax: I don't recognize this person.")
+        responses.append("❌ Baymax: Please teach me your face first.")
+        title_result = "UNKNOWN PERSON ❌"
+else:
+    responses.append("⚠️ Baymax: No face detected in test image")
+    title_result = "NO FACE DETECTED"
+
+# 5. DISPLAY
+test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+face_locations = face_recognition.face_locations(test_img)
+
+for (top, right, bottom, left) in face_locations:
+    color = (0, 255, 0) if is_me else (0, 0, 255)
+    cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+plt.title(f"Result: {title_result}", fontsize=14)
+plt.axis('off')
+plt.show()
+
+# 6. SHOW BAYMAX RESPONSES
+print("\n" + "=" * 60)
+print("--- BAYMAX SAYS ---")
+print("=" * 60)
+for response in responses:
+    print(response)
+print("=" * 60)
+
+print("\n✅ DAY 9 COMPLETE!")
+print("Baymax can now RECOGNIZE you AND RESPOND with text!")
+print("=" * 60)
