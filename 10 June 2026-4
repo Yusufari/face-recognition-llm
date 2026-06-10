@@ -1,0 +1,82 @@
+import random
+from datetime import datetime
+
+print("=" * 60)
+print("DAY 9 - VERSION F")
+print("BAYMAX SIMULATOR")
+print("=" * 60)
+
+print("""
+╔════════════════════════════════════════════════╗
+║                                                ║
+║   🤖 B A Y M A X   S I M U L A T O R 🤖       ║
+║                                                ║
+║   "I cannot deactivate until you say you      ║
+║    are satisfied with your care."             ║
+║                                                ║
+╚════════════════════════════════════════════════╝
+""")
+
+# Get user name
+name = input("\nWhat is your name? ")
+
+# Get time of day
+current_hour = datetime.now().hour
+if 5 <= current_hour < 12:
+    time_greeting = "Good morning"
+elif 12 <= current_hour < 18:
+    time_greeting = "Good afternoon"
+else:
+    time_greeting = "Good evening"
+
+print(f"\n🤖 Baymax: {time_greeting}, {name}!")
+
+# Ask about health
+print("\n🤖 Baymax: On a scale of 1-10, how are you feeling today?")
+print("   1 = Very bad, 10 = Excellent")
+health_score = input("Your score (1-10): ")
+
+try:
+    score = int(health_score)
+    if score <= 3:
+        advice = "You don't look well. Please rest and drink water. Should I call for help?"
+        emoji = "🤒"
+    elif score <= 6:
+        advice = "You seem tired. Take a break and relax for a moment."
+        emoji = "😐"
+    else:
+        advice = "You look great! Keep up the good work and stay healthy!"
+        emoji = "😊"
+except:
+    advice = "I hope you are taking care of yourself today."
+    emoji = "🤖"
+
+print(f"\n🤖 Baymax: {advice} {emoji}")
+
+# Ask about activities
+print("\n🤖 Baymax: What would you like to do today?")
+print("   1. Study TOEFL")
+print("   2. Learn Python/Face Recognition")
+print("   3. Take a break")
+print("   4. Just chat")
+
+choice = input("Your choice (1-4): ")
+
+activity_map = {
+    "1": "Great! Let's study TOEFL together. Open your book or computer! 📚",
+    "2": "Excellent! Learning to code will help you build amazing things! 💻",
+    "3": "Good idea! Rest is important for your health. Come back when ready! 😴",
+    "4": "I'm always here to listen, " + name + ". What would you like to talk about? 💬"
+}
+
+activity_response = activity_map.get(choice, "Whatever you choose, I support you! 💪")
+print(f"\n🤖 Baymax: {activity_response}")
+
+# Final message
+print("\n" + "=" * 60)
+print("🤖 Baymax: I will be here when you need me.")
+print("🤖 Baymax: Take care of yourself, " + name + "!")
+print("=" * 60)
+
+print("\n✅ DAY 9 - VERSION F DONE!")
+print("This is a text-based Baymax simulator. No camera needed!")
