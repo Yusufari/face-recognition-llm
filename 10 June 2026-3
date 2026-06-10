@@ -1,0 +1,108 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+#import face_recognition
+
+print("=" * 60)
+print("DAY 9 - VERSION E")
+print("10 June 2026")
+print("Baymax with MOOD CHECKER")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+import face_recognition
+print("✓ Ready")
+
+# 2. UPLOAD YOUR FACE
+print("\n--- TEACH BAYMAX YOUR FACE ---")
+uploaded_face = files.upload()
+
+for filename in uploaded_face.keys():
+    known_img = face_recognition.load_image_file(filename)
+    known_encoding = face_recognition.face_encodings(known_img)
+
+if len(known_encoding) > 0:
+    known_encoding = known_encoding[0]
+    print("✓ Face learned!")
+else:
+    known_encoding = None
+    print("❌ No face found")
+
+# 3. UPLOAD TEST PHOTO
+print("\n--- UPLOAD TEST PHOTO ---")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_path = filename
+
+# 4. ASK USER ABOUT MOOD
+print("\n--- HOW ARE YOU FEELING? ---")
+print("1. Happy 😊")
+print("2. Sad 😔")
+print("3. Tired 😴")
+print("4. Sick 🤒")
+print("5. Stressed 😫")
+
+mood_input = input("\nType number (1-5): ")
+
+mood_map = {
+    "1": "happy",
+    "2": "sad", 
+    "3": "tired",
+    "4": "sick",
+    "5": "stressed"
+}
+
+mood = mood_map.get(mood_input, "happy")
+
+# 5. BAYMAX RESPONSES BASED ON MOOD
+responses = {
+    "happy": "🤖 Baymax: You look happy, Yusuf! That's wonderful! Keep smiling! 😊",
+    "sad": "🤖 Baymax: I see you're feeling sad, Yusuf. I'm here for you. Let's talk. 🤗",
+    "tired": "🤖 Baymax: You look tired, Yusuf. Please take a short break and rest. 😴",
+    "sick": "🤖 Baymax: You don't look well, Yusuf. Please drink water and see a doctor. 🤒",
+    "stressed": "🤖 Baymax: You seem stressed, Yusuf. Take a deep breath. I am here to help. 🧘"
+}
+
+# 6. RECOGNIZE
+test_img = face_recognition.load_image_file(test_path)
+test_encodings = face_recognition.face_encodings(test_img)
+
+if len(test_encodings) > 0 and known_encoding is not None:
+    test_encoding = test_encodings[0]
+    distance = np.linalg.norm(known_encoding - test_encoding)
+    
+    if distance < 0.6:
+        response = responses.get(mood, responses["happy"])
+        result_text = "RECOGNIZED ✅"
+        color = (0, 255, 0)
+    else:
+        response = "🤖 Baymax: I don't know you. Please teach me your face first."
+        result_text = "UNKNOWN ❌"
+        color = (0, 0, 255)
+else:
+    response = "🤖 Baymax: I cannot see a face clearly."
+    result_text = "NO FACE"
+    color = (255, 0, 0)
+
+# 7. DISPLAY
+test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+face_locations = face_recognition.face_locations(test_img)
+
+for (top, right, bottom, left) in face_locations:
+    cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+plt.title(f"Result: {result_text} | Mood: {mood}", fontsize=14)
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print(response)
+print("=" * 60)
+
+print("\n✅ DAY 9 - VERSION E DONE!")
+print("This simulates how Baymax will respond to your mood!")
