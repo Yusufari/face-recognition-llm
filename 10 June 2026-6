@@ -1,0 +1,89 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import face_recognition
+from datetime import datetime
+
+print("=" * 60)
+print("DAY 9 - VERSION H")
+print("10 June 2026")
+print("Baymax Auto Greeting (No Questions)")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+import face_recognition
+print("Ready")
+
+# 2. UPLOAD YOUR FACE
+print("\n--- TEACH BAYMAX YOUR FACE ---")
+uploaded_face = files.upload()
+
+for filename in uploaded_face.keys():
+    known_img = face_recognition.load_image_file(filename)
+    known_encoding = face_recognition.face_encodings(known_img)
+
+if len(known_encoding) > 0:
+    known_encoding = known_encoding[0]
+    print("Face learned!")
+else:
+    known_encoding = None
+    print("No face found")
+
+# 3. UPLOAD TEST PHOTO
+print("\n--- UPLOAD TEST PHOTO ---")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_path = filename
+
+# 4. TIME BASED GREETING
+current_hour = datetime.now().hour
+
+if 5 <= current_hour < 12:
+    greeting = "Good morning"
+elif 12 <= current_hour < 18:
+    greeting = "Good afternoon"
+else:
+    greeting = "Good evening"
+
+# 5. RECOGNIZE
+test_img = face_recognition.load_image_file(test_path)
+test_encodings = face_recognition.face_encodings(test_img)
+
+if len(test_encodings) > 0 and known_encoding is not None:
+    test_encoding = test_encodings[0]
+    distance = np.linalg.norm(known_encoding - test_encoding)
+    
+    if distance < 0.6:
+        response = f"Baymax: {greeting}, Yusuf! How are you today? I am here to help."
+        result_text = "RECOGNIZED - SUCCESS"
+        color = (0, 255, 0)
+    else:
+        response = "Baymax: I do not recognize this person. Please teach me your face."
+        result_text = "UNKNOWN PERSON"
+        color = (0, 0, 255)
+else:
+    response = "Baymax: I cannot see a face clearly. Please try another photo."
+    result_text = "NO FACE DETECTED"
+    color = (255, 0, 0)
+
+# 6. DISPLAY
+test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+face_locations = face_recognition.face_locations(test_img)
+
+for (top, right, bottom, left) in face_locations:
+    cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+plt.title(f"Result: {result_text}", fontsize=14)
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print(response)
+print("=" * 60)
+
+print("\nDAY 9 - VERSION H COMPLETE!")
