@@ -1,0 +1,88 @@
+import cv2
+import numpy as np
+from google.colab import files
+from IPython.display import display, Javascript
+from google.colab.output import eval_js
+from base64 import b64decode
+
+print("=" * 60)
+print("DAY 10 - REAL-TIME FACE DETECTION")
+print("11 June 2026")
+print("(Using your webcam)")
+print("=" * 60)
+
+# Note: Google Colab needs special code for webcam
+# If this doesn't work, use Version B (video file)
+
+# JavaScript to access webcam
+js = Javascript('''
+async function takePhoto() {
+  const div = document.createElement('div');
+  const capture = document.createElement('button');
+  capture.textContent = 'Capture Photo';
+  div.appendChild(capture);
+
+  const video = document.createElement('video');
+  video.style.width = '320px';
+  video.style.height = '240px';
+  div.appendChild(video);
+
+  document.body.appendChild(div);
+
+  const stream = await navigator.mediaDevices.getUserMedia({video: true});
+  video.srcObject = stream;
+  await video.play();
+
+  await new Promise((resolve) => capture.onclick = resolve);
+
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  stream.getTracks().forEach(track => track.stop());
+  div.remove();
+
+  return canvas.toDataURL('image/jpeg');
+}
+''')
+display(js)
+
+print("\n--- INSTRUCTIONS ---")
+print("1. Click 'Capture Photo' when popup appears")
+print("2. Allow camera access")
+print("3. Face will be detected automatically")
+
+# Take photo
+try:
+    data = eval_js('takePhoto()')
+    header, encoded = data.split(',', 1)
+    binary_data = b64decode(encoded)
+    
+    with open('webcam_photo.jpg', 'wb') as f:
+        f.write(binary_data)
+    print("\n✓ Photo captured!")
+    
+    # Process the photo
+    img = cv2.imread('webcam_photo.jpg')
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img_rgb, (x, y), (x+w, y+h), (0, 255, 0), 3)
+        cv2.putText(img_rgb, "Face", (x, y-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+    
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(8, 6))
+    plt.imshow(img_rgb)
+    plt.title(f"Found {len(faces)} face(s)")
+    plt.axis('off')
+    plt.show()
+    
+    print(f"\n✅ Result: {len(faces)} face(s) detected!")
+    
+except Exception as e:
+    print(f"\n⚠️ Webcam not available: {e}")
+    print("Please use Version B (upload video or image)")
