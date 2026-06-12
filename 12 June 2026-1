@@ -1,0 +1,94 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from google.colab import files
+
+print("=" * 60)
+print("DAY 11 - VERSION B")
+print("12 Juni 2026")
+print("Compare HOG features of two faces")
+print("=" * 60)
+
+# 1. UPLOAD TWO IMAGES
+print("\n--- UPLOAD FIRST FACE IMAGE ---")
+uploaded1 = files.upload()
+
+print("\n--- UPLOAD SECOND FACE IMAGE ---")
+uploaded2 = files.upload()
+
+# 2. PROCESS FIRST FACE
+def extract_hog_from_face(image_path):
+    img = cv2.imread(image_path)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    
+    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+    
+    if len(faces) > 0:
+        x, y, w, h = faces[0]
+        face = gray[y:y+h, x:x+w]
+        face_resized = cv2.resize(face, (128, 128))
+        
+        features, hog_img = hog(
+            face_resized,
+            orientations=9,
+            pixels_per_cell=(8, 8),
+            cells_per_block=(2, 2),
+            visualize=True,
+            feature_vector=True
+        )
+        return features, hog_img, face_resized, True
+    else:
+        return None, None, None, False
+
+# Process both images
+features1, hog1, face1, ok1 = extract_hog_from_face(list(uploaded1.keys())[0])
+features2, hog2, face2, ok2 = extract_hog_from_face(list(uploaded2.keys())[0])
+
+if ok1 and ok2:
+    # Calculate similarity
+    distance = np.linalg.norm(features1 - features2)
+    similarity = 1 / (1 + distance)
+    
+    print(f"\n--- COMPARISON RESULT ---")
+    print(f"Distance between faces: {distance:.4f}")
+    print(f"Similarity score: {similarity:.4f}")
+    
+    if distance < 0.5:
+        print("✓ These faces look VERY SIMILAR (possibly same person)")
+    elif distance < 1.0:
+        print("✓ These faces look MODERATELY SIMILAR")
+    else:
+        print("✗ These faces look DIFFERENT (different people)")
+    
+    # Visualize
+    plt.figure(figsize=(12, 6))
+    
+    plt.subplot(2, 2, 1)
+    plt.imshow(face1, cmap='gray')
+    plt.title("Face 1")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 2)
+    plt.imshow(hog1, cmap='gray')
+    plt.title("HOG 1")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 3)
+    plt.imshow(face2, cmap='gray')
+    plt.title("Face 2")
+    plt.axis('off')
+    
+    plt.subplot(2, 2, 4)
+    plt.imshow(hog2, cmap='gray')
+    plt.title("HOG 2")
+    plt.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+else:
+    print("Could not detect faces in one or both images")
+
+print("\n✅ DAY 11 - VERSION B DONE!")
