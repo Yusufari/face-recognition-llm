@@ -1,0 +1,91 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from skimage import exposure
+from google.colab import files
+
+print("=" * 60)
+print("DAY 11 - HOG + FACE DETECTION")
+print("12 Juni 2026")
+print("Extract HOG features from detected faces")
+print("=" * 60)
+
+# 1. UPLOAD IMAGE
+print("\n--- UPLOAD A FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {filename}")
+
+# 2. LOAD IMAGE
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# 3. DETECT FACE
+face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+faces = face_cascade.detectMultiScale(gray, 1.1, 5)
+
+print(f"Found {len(faces)} face(s)")
+
+if len(faces) > 0:
+    # Take the first face
+    x, y, w, h = faces[0]
+    face_region = gray[y:y+h, x:x+w]
+    print(f"Face region: {w}x{h} pixels")
+    
+    # Resize for HOG (HOG works better with fixed size)
+    face_resized = cv2.resize(face_region, (128, 128))
+    
+    # Extract HOG features
+    hog_features, hog_image = hog(
+        face_resized,
+        orientations=9,
+        pixels_per_cell=(8, 8),
+        cells_per_block=(2, 2),
+        visualize=True,
+        feature_vector=True
+    )
+    
+    print(f"HOG feature vector length: {len(hog_features)}")
+    
+    # Enhance HOG image
+    hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
+    
+    # 4. VISUALIZE
+    plt.figure(figsize=(15, 5))
+    
+    plt.subplot(1, 4, 1)
+    plt.imshow(img_rgb)
+    cv2.rectangle(img_rgb, (x, y), (x+w, y+h), (0, 255, 0), 3)
+    plt.imshow(img_rgb)
+    plt.title("1. Detected Face")
+    plt.axis('off')
+    
+    plt.subplot(1, 4, 2)
+    plt.imshow(face_resized, cmap='gray')
+    plt.title("2. Face Region (128x128)")
+    plt.axis('off')
+    
+    plt.subplot(1, 4, 3)
+    plt.imshow(hog_image_rescaled, cmap='gray')
+    plt.title("3. HOG Features")
+    plt.axis('off')
+    
+    plt.subplot(1, 4, 4)
+    plt.imshow(face_resized, cmap='gray')
+    plt.imshow(hog_image_rescaled, cmap='hot', alpha=0.4)
+    plt.title("4. Overlay")
+    plt.axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    print("\n✅ HOG features extracted successfully!")
+    
+else:
+    print("No face detected. Please try another image.")
+
+print("\n✅ DAY 11 - VERSION A DONE!")
