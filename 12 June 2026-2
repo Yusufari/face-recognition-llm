@@ -1,0 +1,63 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from skimage.feature import hog
+from skimage import exposure
+from google.colab import files
+
+print("=" * 60)
+print("DAY 11 - VERSION C")
+print("12 June 2026")
+print("Simple HOG on Any Image")
+print("=" * 60)
+
+# 1. UPLOAD IMAGE
+print("\n--- UPLOAD AN IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+
+# 2. LOAD AND CONVERT
+img = cv2.imread(image_path)
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+img_resized = cv2.resize(gray, (128, 128))
+
+# 3. EXTRACT HOG
+features, hog_image = hog(
+    img_resized,
+    orientations=9,
+    pixels_per_cell=(8, 8),
+    cells_per_block=(2, 2),
+    visualize=True,
+    feature_vector=True
+)
+
+hog_image_rescaled = exposure.rescale_intensity(hog_image, in_range=(0, 10))
+
+# 4. DISPLAY
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 3, 1)
+plt.imshow(img_resized, cmap='gray')
+plt.title("1. Original Image")
+plt.axis('off')
+
+plt.subplot(1, 3, 2)
+plt.imshow(hog_image_rescaled, cmap='gray')
+plt.title("2. HOG Features (Edges)")
+plt.axis('off')
+
+plt.subplot(1, 3, 3)
+plt.imshow(img_resized, cmap='gray')
+plt.imshow(hog_image_rescaled, cmap='hot', alpha=0.4)
+plt.title("3. Overlay")
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print(f"\n✅ HOG features extracted: {len(features)} numbers")
+print("These numbers represent the shape patterns in your image")
+
+print("\n✅ DAY 11 - VERSION C DONE!")
