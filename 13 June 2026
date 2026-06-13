@@ -1,0 +1,105 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+
+print("=" * 60)
+print("DAY 12 - COMPLETE FACE RECOGNITION PIPELINE")
+print("13 June 2026")
+print("Step by step: Load -> Detect -> Recognize -> Output")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+print("✓ Libraries ready")
+import face_recognition
+
+# 2. UPLOAD KNOWN FACE
+print("\n--- STEP 1: UPLOAD KNOWN FACE (Training) ---")
+uploaded_known = files.upload()
+known_path = list(uploaded_known.keys())[0]
+
+# 3. UPLOAD TEST FACE
+print("\n--- STEP 2: UPLOAD TEST FACE (Testing) ---")
+uploaded_test = files.upload()
+test_path = list(uploaded_test.keys())[0]
+
+# 4. LOAD AND PROCESS KNOWN FACE
+print("\n--- STEP 3: PROCESSING KNOWN FACE ---")
+known_img = face_recognition.load_image_file(known_path)
+known_locations = face_recognition.face_locations(known_img)
+known_encodings = face_recognition.face_encodings(known_img, known_locations)
+
+if len(known_encodings) > 0:
+    known_encoding = known_encodings[0]
+    print("✓ Known face encoded successfully")
+else:
+    print("❌ No face found in known image")
+    known_encoding = None
+
+# 5. LOAD AND PROCESS TEST FACE
+print("\n--- STEP 4: PROCESSING TEST FACE ---")
+test_img = face_recognition.load_image_file(test_path)
+test_locations = face_recognition.face_locations(test_img)
+test_encodings = face_recognition.face_encodings(test_img, test_locations)
+
+if len(test_encodings) > 0:
+    test_encoding = test_encodings[0]
+    print("✓ Test face encoded successfully")
+else:
+    print("❌ No face found in test image")
+    test_encoding = None
+
+# 6. COMPARE
+print("\n--- STEP 5: COMPARING FACES ---")
+if known_encoding is not None and test_encoding is not None:
+    distance = np.linalg.norm(known_encoding - test_encoding)
+    is_match = distance < 0.6
+    
+    print(f"Distance: {distance:.4f}")
+    print(f"Threshold: 0.6")
+    
+    if is_match:
+        print("\n✓ RESULT: SAME PERSON!")
+        result_text = "MATCH - SAME PERSON"
+        color = (0, 255, 0)
+    else:
+        print("\n✗ RESULT: DIFFERENT PERSON!")
+        result_text = "NO MATCH - DIFFERENT PERSON"
+        color = (0, 0, 255)
+else:
+    result_text = "FACE NOT DETECTED"
+    color = (255, 0, 0)
+
+# 7. VISUALIZE
+print("\n--- STEP 6: VISUALIZATION ---")
+
+# Draw on known image
+known_display = cv2.cvtColor(known_img, cv2.COLOR_RGB2BGR)
+for (top, right, bottom, left) in known_locations:
+    cv2.rectangle(known_display, (left, top), (right, bottom), (0, 255, 0), 3)
+
+# Draw on test image
+test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+for (top, right, bottom, left) in test_locations:
+    cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.imshow(cv2.cvtColor(known_display, cv2.COLOR_BGR2RGB))
+plt.title("KNOWN FACE (Training)", fontsize=12)
+plt.axis('off')
+
+plt.subplot(1, 2, 2)
+plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+plt.title(f"TEST FACE\n{result_text}", fontsize=12)
+plt.axis('off')
+
+plt.tight_layout()
+plt.show()
+
+print("\n" + "=" * 60)
+print("✅ DAY 12 - COMPLETE PIPELINE DONE!")
+print("=" * 60)
