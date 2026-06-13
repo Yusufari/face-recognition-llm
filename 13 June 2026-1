@@ -1,0 +1,95 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+
+print("=" * 60)
+print("DAY 12 - VERSION B")
+print("13 June 2026")
+print("Test Multiple Images Against One Known Face")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+print("✓ Ready")
+import face_recognition
+
+# 2. UPLOAD KNOWN FACE
+print("\n--- UPLOAD KNOWN FACE (The person to recognize) ---")
+uploaded_known = files.upload()
+known_path = list(uploaded_known.keys())[0]
+
+# Process known face
+known_img = face_recognition.load_image_file(known_path)
+known_encodings = face_recognition.face_encodings(known_img)
+
+if len(known_encodings) > 0:
+    known_encoding = known_encodings[0]
+    print("✓ Known face encoded")
+else:
+    print("❌ No face found")
+    known_encoding = None
+
+# 3. UPLOAD MULTIPLE TEST IMAGES
+print("\n--- UPLOAD MULTIPLE TEST IMAGES ---")
+print("Upload several photos (some of the same person, some different)")
+uploaded_tests = files.upload()
+
+# 4. TEST EACH IMAGE
+print("\n--- RESULTS ---")
+results = []
+
+for filename in uploaded_tests.keys():
+    test_img = face_recognition.load_image_file(filename)
+    test_encodings = face_recognition.face_encodings(test_img)
+    
+    if len(test_encodings) > 0 and known_encoding is not None:
+        test_encoding = test_encodings[0]
+        distance = np.linalg.norm(known_encoding - test_encoding)
+        is_match = distance < 0.6
+        
+        results.append({
+            'name': filename,
+            'is_match': is_match,
+            'distance': distance
+        })
+        
+        if is_match:
+            print(f"  ✓ {filename}: SAME PERSON (distance: {distance:.3f})")
+        else:
+            print(f"  ✗ {filename}: DIFFERENT PERSON (distance: {distance:.3f})")
+    else:
+        results.append({
+            'name': filename,
+            'is_match': False,
+            'distance': None
+        })
+        print(f"  ? {filename}: No face detected")
+
+# 5. SUMMARY
+print("\n--- SUMMARY ---")
+matches = sum(1 for r in results if r['is_match'])
+total = len(results)
+print(f"Recognized as same person: {matches} out of {total}")
+
+# 6. VISUALIZE FIRST RESULT
+if len(uploaded_tests) > 0:
+    first_test = list(uploaded_tests.keys())[0]
+    test_img = face_recognition.load_image_file(first_test)
+    test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+    test_locations = face_recognition.face_locations(test_img)
+    
+    first_result = results[0]
+    color = (0, 255, 0) if first_result['is_match'] else (0, 0, 255)
+    
+    for (top, right, bottom, left) in test_locations:
+        cv2.rectangle(test_display, (left, top), (right, bottom), color, 3)
+    
+    plt.figure(figsize=(8, 6))
+    plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+    plt.title(f"Sample Result: {first_result['name']}")
+    plt.axis('off')
+    plt.show()
+
+print("\n✅ DAY 12 - VERSION B DONE!")
