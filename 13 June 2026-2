@@ -1,0 +1,64 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+
+print("=" * 60)
+print("DAY 12 - VERSION C")
+print("13 June 2026")
+print("Simple Face Recognition")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+print("✓ Ready")
+import face_recognition
+
+# 2. UPLOAD TWO IMAGES
+print("\n--- UPLOAD FIRST FACE (Person A) ---")
+uploaded_a = files.upload()
+path_a = list(uploaded_a.keys())[0]
+
+print("\n--- UPLOAD SECOND FACE (Person B) ---")
+uploaded_b = files.upload()
+path_b = list(uploaded_b.keys())[0]
+
+# 3. PROCESS
+img_a = face_recognition.load_image_file(path_a)
+img_b = face_recognition.load_image_file(path_b)
+
+encoding_a = face_recognition.face_encodings(img_a)
+encoding_b = face_recognition.face_encodings(img_b)
+
+if len(encoding_a) > 0 and len(encoding_b) > 0:
+    distance = np.linalg.norm(encoding_a[0] - encoding_b[0])
+    
+    print(f"\n--- RESULT ---")
+    print(f"Distance between faces: {distance:.4f}")
+    
+    if distance < 0.6:
+        print("✓ These are the SAME person!")
+        result = "SAME PERSON"
+    else:
+        print("✗ These are DIFFERENT people!")
+        result = "DIFFERENT PERSON"
+    
+    # Display images
+    fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+    
+    axes[0].imshow(cv2.cvtColor(img_a, cv2.COLOR_RGB2BGR))
+    axes[0].set_title("Face 1")
+    axes[0].axis('off')
+    
+    axes[1].imshow(cv2.cvtColor(img_b, cv2.COLOR_RGB2BGR))
+    axes[1].set_title(f"Face 2\nResult: {result}")
+    axes[1].axis('off')
+    
+    plt.tight_layout()
+    plt.show()
+    
+else:
+    print("Could not detect faces in one or both images")
+
+print("\n✅ DAY 12 - VERSION C DONE!")
