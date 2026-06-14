@@ -1,0 +1,74 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+
+print("=" * 60)
+print("DAY 13 - VERSION C")
+print("14 June 2026")
+print("Simple Face Recognition Test")
+print("=" * 60)
+
+# 1. INSTALL
+!pip install face_recognition -q
+print("✓ Ready")
+import face_recognition
+
+# 2. UPLOAD YOUR FACE
+print("\n--- UPLOAD YOUR FACE (The person to recognize) ---")
+uploaded_you = files.upload()
+you_path = list(uploaded_you.keys())[0]
+
+# 3. UPLOAD TEST IMAGES
+print("\n--- UPLOAD TEST IMAGES ---")
+print("Upload 2-3 photos to test")
+uploaded_tests = files.upload()
+
+# 4. ENCODE YOUR FACE
+you_img = face_recognition.load_image_file(you_path)
+you_encodings = face_recognition.face_encodings(you_img)
+
+if len(you_encodings) > 0:
+    you_encoding = you_encodings[0]
+    print("✓ Your face encoded")
+else:
+    print("❌ No face found in your photo")
+    you_encoding = None
+
+# 5. TEST EACH IMAGE
+print("\n--- TEST RESULTS ---")
+
+for filename in uploaded_tests.keys():
+    test_img = face_recognition.load_image_file(filename)
+    test_encodings = face_recognition.face_encodings(test_img)
+    
+    if you_encoding is not None and len(test_encodings) > 0:
+        test_encoding = test_encodings[0]
+        distance = np.linalg.norm(you_encoding - test_encoding)
+        is_you = distance < 0.6
+        
+        # Display
+        test_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+        locations = face_recognition.face_locations(test_img)
+        
+        for (top, right, bottom, left) in locations:
+            if is_you:
+                cv2.rectangle(test_display, (left, top), (right, bottom), (0, 255, 0), 3)
+                cv2.putText(test_display, "YOU!", (left, top-10), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+            else:
+                cv2.rectangle(test_display, (left, top), (right, bottom), (0, 0, 255), 3)
+                cv2.putText(test_display, "Unknown", (left, top-10), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
+        
+        plt.figure(figsize=(6, 6))
+        plt.imshow(cv2.cvtColor(test_display, cv2.COLOR_BGR2RGB))
+        plt.title(f"{filename}\nDistance: {distance:.3f} - {'YOU' if is_you else 'Unknown'}")
+        plt.axis('off')
+        plt.show()
+        
+    else:
+        print(f"❌ {filename}: No face detected")
+
+print("\n✅ DAY 13 - VERSION C DONE!")
