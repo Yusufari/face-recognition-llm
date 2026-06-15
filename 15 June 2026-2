@@ -1,0 +1,62 @@
+print("=" * 60)
+print("DAY 14 - VERSION C")
+print("15 June 2026")
+print("BAYMAX EXPRESSION DETECTOR (Simulator)")
+print("=" * 60)
+
+print("""
+╔════════════════════════════════════════════════╗
+║                                                ║
+║   🤖 B A Y M A X   E M O T I O N   A I 🤖     ║
+║                                                ║
+║   "I was programmed to detect your emotions"   ║
+║                                                ║
+╚════════════════════════════════════════════════╝
+""")
+
+print("How are you feeling right now?\n")
+
+print("1. Happy 😊")
+print("2. Sad 😔")
+print("3. Tired 😴")
+print("4. Sick 🤒")
+print("5. Stressed 😫")
+
+choice = input("\nChoose your feeling (1-5): ")
+
+responses = {
+    "1": {
+        "expression": "HAPPY",
+        "message": "You look happy, Yusuf! That's wonderful! Keep smiling and stay healthy! 😊"
+    },
+    "2": {
+        "expression": "SAD",
+        "message": "I sense you are feeling sad, Yusuf. I am here for you. Let's talk. 🤗"
+    },
+    "3": {
+        "expression": "TIRED",
+        "message": "You look tired, Yusuf. Please take a short break and rest. 😴"
+    },
+    "4": {
+        "expression": "SICK",
+        "message": "You don't look well, Yusuf. Please drink water and see a doctor. 🤒"
+    },
+    "5": {
+        "expression": "STRESSED",
+        "message": "You seem stressed, Yusuf. Take a deep breath. I am here to help. 🧘"
+    }
+}
+
+if choice in responses:
+    print("\n" + "=" * 60)
+    print(f"🤖 Baymax detects: {responses[choice]['expression']}")
+    print("=" * 60)
+    print(f"\n🤖 Baymax: {responses[choice]['message']}")
+else:
+    print("\n🤖 Baymax: I don't understand that choice. Please tell me how you feel.")
+
+print("\n" + "=" * 60)
+print("🤖 Baymax: I will always be here to take care of you.")
+print("=" * 60)
+
+print("\n✅ DAY 14 - VERSION C DONE!")
