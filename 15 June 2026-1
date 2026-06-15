@@ -1,0 +1,82 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+!pip install face_recognition -q
+print("✓ Ready")
+import face_recognition
+
+print("=" * 60)
+print("DAY 14 - VERSION B")
+print("15 June 2026")
+print("Upload faces and Baymax will guess your expression")
+print("=" * 60)
+
+# 1. UPLOAD FACE IMAGES
+print("\n--- UPLOAD 3 FACE IMAGES ---")
+print("Image 1: Happy face 😊")
+print("Image 2: Sad face 😔")
+print("Image 3: Tired face 😴")
+
+uploaded = files.upload()
+
+# 2. SIMPLE EXPRESSION DETECTION (using face landmarks)
+print("\n--- BAYMAX ANALYSIS ---")
+print("=" * 60)
+
+for idx, filename in enumerate(uploaded.keys()):
+    img = face_recognition.load_image_file(filename)
+    
+    # Get face landmarks
+    face_landmarks_list = face_recognition.face_landmarks(img)
+    
+    if len(face_landmarks_list) > 0:
+        landmarks = face_landmarks_list[0]
+        
+        # Simple heuristic for expression
+        # Check for mouth shape
+        if 'top_lip' in landmarks and 'bottom_lip' in landmarks:
+            top_lip = landmarks['top_lip']
+            bottom_lip = landmarks['bottom_lip']
+            
+            # Calculate mouth openness
+            mouth_center_y = (top_lip[0][1] + bottom_lip[0][1]) / 2
+            mouth_openness = abs(top_lip[3][1] - bottom_lip[3][1])
+            
+            # Simple rules
+            if mouth_openness > 15:
+                expression = "HAPPY 😊"
+                advice = "Keep smiling! It's good for your health!"
+            elif mouth_openness < 8:
+                expression = "SAD or TIRED 😔"
+                advice = "You look tired. Please rest."
+            else:
+                expression = "NEUTRAL 😐"
+                advice = "You seem calm. That's good!"
+        else:
+            expression = "UNKNOWN"
+            advice = "I cannot read your expression clearly."
+    else:
+        expression = "NO FACE DETECTED"
+        advice = "Please upload a clearer face photo."
+    
+    # Display
+    img_display = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    face_locations = face_recognition.face_locations(img)
+    
+    for (top, right, bottom, left) in face_locations:
+        cv2.rectangle(img_display, (left, top), (right, bottom), (0, 255, 0), 2)
+    
+    plt.figure(figsize=(6, 6))
+    plt.imshow(cv2.cvtColor(img_display, cv2.COLOR_BGR2RGB))
+    plt.title(f"Image {idx+1}: {filename}", fontsize=10)
+    plt.axis('off')
+    plt.show()
+    
+    print(f"\nImage: {filename}")
+    print(f"Baymax: I see a {expression}")
+    print(f"Baymax: {advice}")
+    print("-" * 40)
+
+print("\n✅ DAY 14 - VERSION B DONE!")
