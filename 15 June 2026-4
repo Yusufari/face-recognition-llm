@@ -1,0 +1,92 @@
+import random
+import matplotlib.pyplot as plt
+import numpy as np
+
+print("=" * 60)
+print("DAY 14 - VERSION E")
+print("15 June 2026")
+print("Baymax Expression Quiz")
+print("=" * 60)
+
+print("""
+🤖 Baymax: Let me test my expression detection!
+
+I will show you synthetic faces.
+You tell me what expression you see!
+
+Then I will tell you if I agree.
+""")
+
+# Create synthetic expression images
+def create_expression_face(expression):
+    """Create a simple synthetic face"""
+    face = np.ones((100, 100, 3)) * 255
+    
+    # Face circle
+    cv2.circle(face, (50, 50), 40, (255, 220, 200), -1)
+    
+    # Eyes
+    cv2.circle(face, (30, 40), 8, (0, 0, 0), -1)
+    cv2.circle(face, (70, 40), 8, (0, 0, 0), -1)
+    cv2.circle(face, (30, 40), 3, (255, 255, 255), -1)
+    cv2.circle(face, (70, 40), 3, (255, 255, 255), -1)
+    
+    # Mouth based on expression
+    if expression == "HAPPY":
+        cv2.ellipse(face, (50, 70), (20, 15), 0, 0, 180, (0, 0, 0), 3)
+    elif expression == "SAD":
+        cv2.ellipse(face, (50, 75), (20, 15), 0, 180, 360, (0, 0, 0), 3)
+    elif expression == "TIRED":
+        cv2.line(face, (35, 70), (65, 70), (0, 0, 0), 3)
+        # Droopy eyes
+        cv2.ellipse(face, (30, 40), (8, 5), 0, 0, 360, (0, 0, 0), -1)
+        cv2.ellipse(face, (70, 40), (8, 5), 0, 0, 360, (0, 0, 0), -1)
+    else:  # NEUTRAL
+        cv2.line(face, (40, 70), (60, 70), (0, 0, 0), 2)
+    
+    return face / 255.0
+
+# Quiz
+expressions = ["HAPPY", "SAD", "TIRED", "NEUTRAL"]
+score = 0
+
+for i in range(4):
+    exp = expressions[i]
+    face_img = create_expression_face(exp)
+    
+    plt.figure(figsize=(4, 4))
+    plt.imshow(face_img)
+    plt.title(f"Face {i+1}")
+    plt.axis('off')
+    plt.show()
+    
+    print(f"\nWhat expression is this?")
+    print("1. HAPPY 😊")
+    print("2. SAD 😔")
+    print("3. TIRED 😴")
+    print("4. NEUTRAL 😐")
+    
+    answer = input("Your answer (1-4): ")
+    
+    answer_map = {"1": "HAPPY", "2": "SAD", "3": "TIRED", "4": "NEUTRAL"}
+    user_guess = answer_map.get(answer, "UNKNOWN")
+    
+    if user_guess == exp:
+        print(f"\n✅ Correct! Baymax agrees. It is {exp}.")
+        score += 1
+    else:
+        print(f"\n❌ Baymax thinks it is {exp}. Keep practicing!")
+
+print("\n" + "=" * 60)
+print(f"--- QUIZ RESULT ---")
+print(f"Your score: {score}/4")
+print("=" * 60)
+
+if score == 4:
+    print("🤖 Baymax: Excellent! You read expressions perfectly!")
+elif score >= 2:
+    print("🤖 Baymax: Good job! Keep practicing!")
+else:
+    print("🤖 Baymax: Don't worry. Expression detection takes practice!")
+
+print("\n✅ DAY 14 - VERSION E DONE!")
