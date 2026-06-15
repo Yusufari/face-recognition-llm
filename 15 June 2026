@@ -1,0 +1,149 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+import warnings
+warnings.filterwarnings('ignore')
+
+print("=" * 60)
+print("DAY 14 - AI DIAGNOSIS: FACE EXPRESSION DETECTION")
+print("15 June 2026")
+print("Baymax learns to read your emotions!")
+print("=" * 60)
+
+# 1. CREATE SYNTHETIC DATASET FOR DEMO
+print("\n--- STEP 1: CREATING SYNTHETIC EXPRESSION DATA ---")
+
+np.random.seed(42)
+n_samples = 500
+n_features = 100
+
+# Create synthetic features for 3 expressions
+# Happy (label 0), Sad (label 1), Tired (label 2)
+X = np.random.rand(n_samples, n_features)
+y = np.zeros(n_samples)
+
+# Add patterns to make them distinguishable
+# Happy: higher values in first 30 features
+X[0:200, 0:30] += 0.5
+y[0:200] = 0  # Happy
+
+# Sad: higher values in middle 30 features
+X[200:350, 35:65] += 0.5
+y[200:350] = 1  # Sad
+
+# Tired: higher values in last 30 features
+X[350:500, 70:100] += 0.5
+y[350:500] = 2  # Tired
+
+# Add noise
+X += np.random.rand(n_samples, n_features) * 0.2
+
+print(f"Dataset created: {n_samples} samples")
+print("  - Happy: 200 samples")
+print("  - Sad: 150 samples")
+print("  - Tired: 150 samples")
+
+# 2. TRAIN/TEST SPLIT
+print("\n--- STEP 2: TRAIN/TEST SPLIT ---")
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+print(f"Training: {len(X_train)} samples")
+print(f"Testing: {len(X_test)} samples")
+
+# 3. BUILD NEURAL NETWORK
+print("\n--- STEP 3: BUILDING EXPRESSION CLASSIFIER ---")
+model = Sequential([
+    Dense(64, activation='relu', input_shape=(n_features,)),
+    Dropout(0.3),
+    Dense(32, activation='relu'),
+    Dropout(0.3),
+    Dense(3, activation='softmax')  # 3 expressions: Happy, Sad, Tired
+])
+
+model.compile(
+    optimizer='adam',
+    loss='sparse_categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+model.summary()
+
+# 4. TRAIN
+print("\n--- STEP 4: TRAINING BAYMAX ---")
+history = model.fit(
+    X_train, y_train,
+    epochs=30,
+    validation_data=(X_test, y_test),
+    verbose=0
+)
+
+# 5. EVALUATE
+print("\n--- STEP 5: EVALUATION ---")
+test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+print(f"Accuracy: {test_acc:.4f} ({test_acc*100:.1f}%)")
+
+# 6. VISUALIZE TRAINING
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train')
+plt.plot(history.history['val_accuracy'], label='Validation')
+plt.title('Model Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train')
+plt.plot(history.history['val_loss'], label='Validation')
+plt.title('Model Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# 7. TEST WITH SAMPLE
+print("\n--- STEP 6: BAYMAX DIAGNOSIS DEMO ---")
+
+# Create a test sample
+test_sample = np.random.rand(1, n_features)
+
+# Make it look like happy
+test_sample[0, 0:30] += 0.6
+
+# Predict
+prediction = model.predict(test_sample, verbose=0)
+predicted_class = np.argmax(prediction)
+confidence = np.max(prediction)
+
+expressions = {0: "HAPPY 😊", 1: "SAD 😔", 2: "TIRED 😴"}
+
+print(f"\nBaymax analysis:")
+print(f"  Detected expression: {expressions[predicted_class]}")
+print(f"  Confidence: {confidence:.2%}")
+
+# 8. BAYMAX RESPONSE
+print("\n" + "=" * 60)
+print("--- BAYMAX RESPONDS ---")
+print("=" * 60)
+
+if predicted_class == 0:
+    print("🤖 Baymax: You look happy, Yusuf! That's wonderful!")
+    print("🤖 Baymax: Keep smiling and stay healthy!")
+elif predicted_class == 1:
+    print("🤖 Baymax: I sense you are feeling sad, Yusuf.")
+    print("🤖 Baymax: I am here for you. Let's talk.")
+else:
+    print("🤖 Baymax: You look tired, Yusuf.")
+    print("🤖 Baymax: Please take a break and rest.")
+
+print("=" * 60)
+
+print("\n✅ DAY 14 - VERSION A DONE!")
+print("Baymax can now recognize your emotions!")
