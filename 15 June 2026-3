@@ -1,0 +1,130 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import face_recognition
+from IPython.display import clear_output
+import time
+
+print("=" * 60)
+print("DAY 14 - VERSION D")
+print("15 June 2026")
+print("Real-time Expression Detection Simulator")
+print("=" * 60)
+
+# 1. UPLOAD MULTIPLE FACES WITH DIFFERENT EXPRESSIONS
+print("\n--- UPLOAD FACES WITH DIFFERENT EXPRESSIONS ---")
+print("Please upload 3-5 photos:")
+print("  - Happy face 😊")
+print("  - Sad face 😔")
+print("  - Tired face 😴")
+print("  - Neutral face 😐")
+
+uploaded = files.upload()
+
+# 2. SIMPLE EXPRESSION RULES
+def detect_expression_simple(face_image):
+    """Simple expression detection based on image properties"""
+    gray = cv2.cvtColor(face_image, cv2.COLOR_RGB2GRAY)
+    
+    # Calculate average brightness
+    avg_brightness = np.mean(gray)
+    
+    # Calculate contrast (standard deviation)
+    contrast = np.std(gray)
+    
+    # Simple heuristic
+    if avg_brightness > 120 and contrast > 50:
+        return "HAPPY", 0.7
+    elif avg_brightness < 80 and contrast < 40:
+        return "TIRED", 0.6
+    elif contrast < 45:
+        return "SAD", 0.55
+    else:
+        return "NEUTRAL", 0.5
+
+# 3. PROCESS EACH IMAGE
+print("\n--- BAYMAX EXPRESSION ANALYSIS ---")
+print("=" * 60)
+
+results = []
+
+for filename in uploaded.keys():
+    print(f"\nAnalyzing: {filename}")
+    
+    # Load image
+    img = face_recognition.load_image_file(filename)
+    img_display = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    
+    # Detect faces
+    face_locations = face_recognition.face_locations(img)
+    
+    if len(face_locations) > 0:
+        top, right, bottom, left = face_locations[0]
+        face_roi = img[top:bottom, left:right]
+        
+        # Detect expression
+        expression, confidence = detect_expression_simple(face_roi)
+        
+        # Draw result
+        if expression == "HAPPY":
+            color = (0, 255, 0)
+            advice = "Keep smiling! It's good for your health!"
+        elif expression == "SAD":
+            color = (255, 0, 0)
+            advice = "I am here for you. Let's talk."
+        elif expression == "TIRED":
+            color = (0, 165, 255)
+            advice = "Please take a break and rest."
+        else:
+            color = (255, 255, 0)
+            advice = "You seem calm. That's good!"
+        
+        cv2.rectangle(img_display, (left, top), (right, bottom), color, 3)
+        cv2.putText(img_display, f"{expression}", (left, top-10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+        
+        results.append({
+            'filename': filename,
+            'expression': expression,
+            'confidence': confidence,
+            'advice': advice
+        })
+        
+        print(f"  Expression: {expression}")
+        print(f"  Confidence: {confidence:.0%}")
+        print(f"  Baymax: {advice}")
+        
+    else:
+        print("  No face detected")
+        results.append({
+            'filename': filename,
+            'expression': 'NO FACE',
+            'confidence': 0,
+            'advice': 'Please upload a clearer photo'
+        })
+
+# 4. DISPLAY SUMMARY
+print("\n" + "=" * 60)
+print("--- SUMMARY ---")
+print("=" * 60)
+
+for r in results:
+    print(f"{r['filename']}: {r['expression']}")
+
+# 5. SHOW LAST IMAGE
+if len(uploaded) > 0:
+    last_img = face_recognition.load_image_file(list(uploaded.keys())[-1])
+    last_display = cv2.cvtColor(last_img, cv2.COLOR_RGB2BGR)
+    last_locations = face_recognition.face_locations(last_img)
+    
+    for (top, right, bottom, left) in last_locations:
+        cv2.rectangle(last_display, (left, top), (right, bottom), (0, 255, 0), 3)
+    
+    plt.figure(figsize=(8, 6))
+    plt.imshow(cv2.cvtColor(last_display, cv2.COLOR_BGR2RGB))
+    plt.title("Sample Result")
+    plt.axis('off')
+    plt.show()
+
+print("\n✅ DAY 14 - VERSION D DONE!")
