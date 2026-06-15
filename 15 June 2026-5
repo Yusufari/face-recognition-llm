@@ -1,0 +1,89 @@
+print("=" * 60)
+print("DAY 14 - VERSION F")
+print("15 June 2026")
+print("Baymax Emotion Check-in")
+print("=" * 60)
+
+print("""
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   🤖 B A Y M A X   D A I L Y   C H E C K - I N 🤖       ║
+║                                                          ║
+║   "On a scale of 1 to 10, how are you feeling today?"   ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+""")
+
+# Get name
+name = input("What is your name? ")
+
+# Get emotion
+print("\nHow are you feeling right now?")
+print("-" * 40)
+print("1. 😊 Happy")
+print("2. 😔 Sad")
+print("3. 😴 Tired")
+print("4. 🤒 Sick")
+print("5. 😫 Stressed")
+print("6. 😐 Neutral")
+
+choice = input("\nChoose (1-6): ")
+
+# Baymax responses
+responses = {
+    "1": {
+        "message": f"That's wonderful, {name}! Your happiness makes me happy too!",
+        "action": "Keep smiling and stay healthy! 😊",
+        "color": "green"
+    },
+    "2": {
+        "message": f"I'm sorry you're feeling sad, {name}. I'm here for you.",
+        "action": "Let's talk. Sometimes sharing helps. 🤗",
+        "color": "blue"
+    },
+    "3": {
+        "message": f"You look tired, {name}. When did you last rest?",
+        "action": "Please take a short break and rest your eyes. 😴",
+        "color": "orange"
+    },
+    "4": {
+        "message": f"You don't look well, {name}. Have you seen a doctor?",
+        "action": "Please drink water and get plenty of rest. 🤒",
+        "color": "red"
+    },
+    "5": {
+        "message": f"You seem stressed, {name}. Take a deep breath.",
+        "action": "Inhale... exhale... I am here to help. 🧘",
+        "color": "purple"
+    },
+    "6": {
+        "message": f"You seem calm today, {name}. That's good!",
+        "action": "Balance is important for good health. 😐",
+        "color": "gray"
+    }
+}
+
+if choice in responses:
+    print("\n" + "=" * 60)
+    print(f"🤖 Baymax: {responses[choice]['message']}")
+    print("=" * 60)
+    print(f"\n🤖 Baymax: {responses[choice]['action']}")
+else:
+    print("\n🤖 Baymax: I don't understand that. Please tell me how you feel.")
+
+# Follow-up question
+print("\n" + "-" * 40)
+follow = input("Would you like to talk more? (yes/no): ")
+
+if follow.lower() == "yes":
+    print("\n🤖 Baymax: I'm always here to listen, " + name + ".")
+    print("🤖 Baymax: Remember to take care of yourself.")
+else:
+    print("\n🤖 Baymax: Okay. Remember I am here if you need me.")
+
+print("\n" + "=" * 60)
+print("🤖 Baymax: Take care, " + name + "!")
+print("=" * 60)
+
+print("\n✅ DAY 14 - VERSION F DONE!")
+print("Baymax completed your daily emotion check-in!")
