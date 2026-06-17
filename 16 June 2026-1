@@ -1,0 +1,87 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import face_recognition
+
+print("=" * 60)
+print("DAY 15 - VERSION B")
+print("16 June 2026")
+print("Baymax: Multiple Face Analysis")
+print("=" * 60)
+
+# 1. UPLOAD IMAGE WITH MULTIPLE FACES
+print("\n--- UPLOAD A PHOTO WITH MULTIPLE FACES ---")
+print("(Family photo, group photo, etc.)")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+
+# 2. PROCESS
+test_img = face_recognition.load_image_file(image_path)
+test_locations = face_recognition.face_locations(test_img)
+test_encodings = face_recognition.face_encodings(test_img, test_locations)
+
+print(f"\nFound {len(test_locations)} face(s) in the image")
+
+# 3. ANALYZE EACH FACE
+def detect_expression(face_roi):
+    """Detect expression from face region"""
+    gray = cv2.cvtColor(face_roi, cv2.COLOR_RGB2GRAY)
+    
+    avg = np.mean(gray)
+    std = np.std(gray)
+    
+    if avg > 120 and std > 50:
+        return "HAPPY 😊", (0, 255, 0)
+    elif avg < 80 and std < 40:
+        return "TIRED 😴", (0, 165, 255)
+    elif std < 45:
+        return "SAD 😔", (255, 0, 0)
+    else:
+        return "NEUTRAL 😐", (255, 255, 0)
+
+img_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+
+expressions = []
+
+for i, location in enumerate(test_locations):
+    top, right, bottom, left = location
+    face_roi = test_img[top:bottom, left:right]
+    
+    expression, color = detect_expression(face_roi)
+    expressions.append(expression)
+    
+    cv2.rectangle(img_display, (left, top), (right, bottom), color, 3)
+    cv2.putText(img_display, f"Person {i+1}: {expression}", 
+                (left, top-10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+# 4. DISPLAY
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(img_display, cv2.COLOR_BGR2RGB))
+plt.title(f"Baymax Analysis: {len(expressions)} faces detected")
+plt.axis('off')
+plt.show()
+
+# 5. SUMMARY
+print("\n" + "=" * 60)
+print("--- EXPRESSION SUMMARY ---")
+print("=" * 60)
+
+for i, exp in enumerate(expressions):
+    print(f"Person {i+1}: {exp}")
+
+# 6. DETECT EMOTIONS IN GROUP
+happy = sum(1 for e in expressions if "HAPPY" in e)
+sad = sum(1 for e in expressions if "SAD" in e)
+tired = sum(1 for e in expressions if "TIRED" in e)
+neutral = sum(1 for e in expressions if "NEUTRAL" in e)
+
+print(f"\n📊 Group Emotion Analysis:")
+print(f"  Happy: {happy} people")
+print(f"  Sad: {sad} people")
+print(f"  Tired: {tired} people")
+print(f"  Neutral: {neutral} people")
+
+print("\n✅ DAY 15 - VERSION B DONE!")
