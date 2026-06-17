@@ -1,0 +1,110 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import warnings
+warnings.filterwarnings('ignore')
+
+print("=" * 60)
+print("DAY 16 - VERSION B")
+print("17 June 2026")
+print("Baymax: RECOGNIZE + READ EXPRESSION")
+print("=" * 60)
+
+# 1. INSTALL
+#!pip install deepface -q
+#!pip install face_recognition -q
+from deepface import DeepFace
+import face_recognition
+print("✓ Libraries ready")
+
+# 2. UPLOAD KNOWN FACE
+print("\n--- UPLOAD YOUR FACE ---")
+uploaded_known = files.upload()
+known_path = list(uploaded_known.keys())[0]
+
+# 3. UPLOAD TEST IMAGE
+print("\n--- UPLOAD TEST IMAGE ---")
+uploaded_test = files.upload()
+test_path = list(uploaded_test.keys())[0]
+
+# 4. ENCODE KNOWN FACE
+known_img = face_recognition.load_image_file(known_path)
+known_encodings = face_recognition.face_encodings(known_img)
+
+if len(known_encodings) > 0:
+    known_encoding = known_encodings[0]
+    print("✓ Your face encoded")
+else:
+    known_encoding = None
+    print("❌ No face detected in known image")
+
+# 5. PROCESS TEST IMAGE
+test_img = face_recognition.load_image_file(test_path)
+test_locations = face_recognition.face_locations(test_img)
+test_encodings = face_recognition.face_encodings(test_img, test_locations)
+
+print(f"\nFound {len(test_locations)} face(s) in test image")
+
+# 6. ANALYZE EACH FACE
+img_display = cv2.cvtColor(test_img, cv2.COLOR_RGB2BGR)
+
+try:
+    # Get expression for each face
+    result = DeepFace.analyze(
+        img_path=test_path,
+        actions=['emotion'],
+        enforce_detection=True
+    )
+    
+    for i, (location, encoding, face_data) in enumerate(zip(test_locations, test_encodings, result)):
+        top, right, bottom, left = location
+        
+        # Recognize
+        if known_encoding is not None:
+            distance = np.linalg.norm(known_encoding - encoding)
+            is_known = distance < 0.6
+            name = "Yusuf" if is_known else "Unknown"
+        else:
+            name = "Unknown"
+        
+        # Get expression
+        emotion = face_data['dominant_emotion']
+        confidence = face_data['emotion'][emotion]
+        
+        # Color based on emotion
+        colors = {
+            'happy': (0, 255, 0),
+            'sad': (255, 0, 0),
+            'angry': (255, 0, 0),
+            'fear': (255, 165, 0),
+            'surprise': (255, 255, 0),
+            'neutral': (255, 255, 255),
+            'disgust': (0, 255, 0)
+        }
+        color = colors.get(emotion, (0, 255, 0))
+        
+        cv2.rectangle(img_display, (left, top), (right, bottom), color, 3)
+        cv2.putText(img_display, f"{name}: {emotion.upper()}", 
+                    (left, top-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+        cv2.putText(img_display, f"{confidence:.1f}%", 
+                    (left, bottom+20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        
+        print(f"\nFace {i+1}: {name}")
+        print(f"  Emotion: {emotion.upper()} ({confidence:.1f}%)")
+        
+except Exception as e:
+    print(f"Error in emotion detection: {e}")
+    # Fallback: just draw boxes
+    for location in test_locations:
+        top, right, bottom, left = location
+        cv2.rectangle(img_display, (left, top), (right, bottom), (0, 255, 0), 3)
+
+# 7. DISPLAY
+plt.figure(figsize=(10, 8))
+plt.imshow(cv2.cvtColor(img_display, cv2.COLOR_BGR2RGB))
+plt.title("Baymax: Face Recognition + Emotion Detection", fontsize=14)
+plt.axis('off')
+plt.show()
+
+print("\n✅ DAY 16 - VERSION B DONE!")
