@@ -1,0 +1,88 @@
+print("=" * 60)
+print("DAY 15 - VERSION C")
+print("16 June 2026")
+print("Baymax Daily Health Check-in")
+print("=" * 60)
+
+print("""
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   🤖 B A Y M A X   D A I L Y   C H E C K - I N 🤖       ║
+║                                                          ║
+║   "Hello! I am Baymax, your personal healthcare        ║
+║    companion. Let me check on you today."              ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+""")
+
+# Personal information
+name = input("\nWhat is your name? ")
+
+# Mood check
+print("\nHow are you feeling today?")
+print("-" * 40)
+print("1. Happy 😊")
+print("2. Sad 😔")
+print("3. Tired 😴")
+print("4. Sick 🤒")
+print("5. Stressed 😫")
+print("6. Okay 😐")
+
+mood = input("\nChoose (1-6): ")
+
+mood_responses = {
+    "1": {"mood": "Happy", "emoji": "😊", 
+          "advice": "Wonderful! Happiness is contagious. Keep smiling!"},
+    "2": {"mood": "Sad", "emoji": "😔",
+          "advice": "I'm sorry you feel this way. I am here to listen."},
+    "3": {"mood": "Tired", "emoji": "😴",
+          "advice": "You need rest. Please take a nap or go to bed early."},
+    "4": {"mood": "Sick", "emoji": "🤒",
+          "advice": "You don't look well. Please see a doctor and rest."},
+    "5": {"mood": "Stressed", "emoji": "😫",
+          "advice": "Take a deep breath. Remember to relax and take breaks."},
+    "6": {"mood": "Okay", "emoji": "😐",
+          "advice": "That's good. Maintaining balance is important."}
+}
+
+if mood in mood_responses:
+    print("\n" + "=" * 60)
+    print(f"🤖 Baymax: I detect you are feeling {mood_responses[mood]['mood']} {mood_responses[mood]['emoji']}")
+    print("=" * 60)
+    print(f"\n🤖 Baymax: {mood_responses[mood]['advice']}")
+else:
+    print("\n🤖 Baymax: I don't understand that choice.")
+
+# Sleep check
+print("\n" + "-" * 40)
+sleep = input("How many hours of sleep did you get last night? ")
+
+try:
+    hours = float(sleep)
+    if hours < 5:
+        sleep_advice = "That's very little! You need at least 7 hours for good health."
+    elif hours < 7:
+        sleep_advice = "That's okay, but try to get at least 7 hours."
+    else:
+        sleep_advice = "That's great! Keep it up!"
+    
+    print(f"\n🤖 Baymax: {sleep_advice}")
+except:
+    print("\n🤖 Baymax: I hope you are getting enough rest.")
+
+# Water reminder
+print("\n" + "-" * 40)
+water = input("Have you drunk enough water today? (yes/no): ")
+
+if water.lower() == "yes":
+    print("🤖 Baymax: Great! Staying hydrated is important.")
+else:
+    print("🤖 Baymax: Please drink water regularly. Your body needs it.")
+
+# Final message
+print("\n" + "=" * 60)
+print(f"🤖 Baymax: Take care of yourself, {name}!")
+print("🤖 Baymax: I will check on you again tomorrow.")
+print("=" * 60)
+
+print("\n✅ DAY 15 - VERSION C DONE!")
