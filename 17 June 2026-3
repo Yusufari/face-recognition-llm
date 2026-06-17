@@ -1,0 +1,92 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import warnings
+warnings.filterwarnings('ignore')
+
+print("=" * 60)
+print("DAY 16 - VERSION C")
+print("17 June 2026")
+print("Baymax: Batch Expression Detection")
+print("=" * 60)
+
+# 1. INSTALL
+#!pip install deepface -q
+from deepface import DeepFace
+print("✓ Ready")
+
+# 2. UPLOAD MULTIPLE IMAGES
+print("\n--- UPLOAD 3-5 FACE IMAGES ---")
+print("Try different expressions: happy, sad, tired, etc.")
+uploaded = files.upload()
+
+# 3. ANALYZE EACH IMAGE
+results = []
+
+for filename in uploaded.keys():
+    print(f"\nAnalyzing: {filename}")
+    
+    try:
+        result = DeepFace.analyze(
+            img_path=filename,
+            actions=['emotion'],
+            enforce_detection=True
+        )
+        
+        if len(result) > 0:
+            emotion = result[0]['dominant_emotion']
+            confidence = result[0]['emotion'][emotion]
+            
+            results.append({
+                'file': filename,
+                'emotion': emotion,
+                'confidence': confidence,
+                'success': True
+            })
+            
+            print(f"  Baymax: {emotion.upper()} ({confidence:.1f}%)")
+        else:
+            results.append({
+                'file': filename,
+                'emotion': 'No face',
+                'confidence': 0,
+                'success': False
+            })
+            print("  No face detected")
+            
+    except Exception as e:
+        results.append({
+            'file': filename,
+            'emotion': 'Error',
+            'confidence': 0,
+            'success': False
+        })
+        print(f"  Error: {e}")
+
+# 4. SUMMARY
+print("\n" + "=" * 60)
+print("--- SUMMARY ---")
+print("=" * 60)
+
+emotion_count = {}
+for r in results:
+    if r['success']:
+        emotion_count[r['emotion']] = emotion_count.get(r['emotion'], 0) + 1
+
+for em, count in emotion_count.items():
+    print(f"  {em}: {count} image(s)")
+
+# 5. DISPLAY SAMPLE
+if len(uploaded) > 0:
+    sample_file = list(uploaded.keys())[0]
+    img = cv2.imread(sample_file)
+    img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    
+    plt.figure(figsize=(6, 6))
+    plt.imshow(img_rgb)
+    plt.title("Sample Image")
+    plt.axis('off')
+    plt.show()
+
+print("\n✅ DAY 16 - VERSION C DONE!")
