@@ -1,0 +1,87 @@
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+import warnings
+warnings.filterwarnings('ignore')
+
+print("=" * 60)
+print("DAY 16 - DEEPFACE EXPRESSION DETECTION")
+print("17 June 2026")
+print("Baymax learns ACCURATE emotion detection!")
+print("=" * 60)
+
+# 1. INSTALL DEEPFACE
+print("\n--- INSTALLING DEEPFACE ---")
+!pip install deepface -q
+from deepface import DeepFace
+print("✓ DeepFace installed!")
+
+# 2. UPLOAD IMAGE
+print("\n--- UPLOAD A FACE IMAGE ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"Loaded: {filename}")
+
+# 3. ANALYZE
+print("\n--- BAYMAX ANALYSIS ---")
+print("=" * 60)
+
+try:
+    # Analyze emotion
+    result = DeepFace.analyze(
+        img_path=image_path,
+        actions=['emotion'],
+        enforce_detection=True
+    )
+    
+    if len(result) > 0:
+        data = result[0]
+        emotion = data['dominant_emotion']
+        emotion_scores = data['emotion']
+        face_area = data['area']
+        
+        print(f"🤖 Baymax: I detect {emotion.upper()}!")
+        print(f"   Confidence: {emotion_scores[emotion]:.2f}%")
+        print(f"   Face area: {face_area} pixels")
+        
+        # Baymax Response
+        responses = {
+            'happy': "😊 Wonderful! Keep smiling!",
+            'sad': "😔 I'm here for you. Let's talk.",
+            'angry': "😠 Take a deep breath. Calm down.",
+            'fear': "😨 You are safe. I am here.",
+            'surprise': "😲 Wow! That's unexpected!",
+            'neutral': "😐 You seem calm. Good!",
+            'disgust': "🤢 I understand. Let's move on."
+        }
+        
+        print(f"\n🤖 Baymax: {responses.get(emotion, 'I see you.')}")
+        
+        # Display all emotions
+        print("\n--- EMOTION BREAKDOWN ---")
+        sorted_emotions = sorted(emotion_scores.items(), key=lambda x: x[1], reverse=True)
+        for em, score in sorted_emotions:
+            bar = "█" * int(score / 5)
+            print(f"  {em}: {bar} {score:.1f}%")
+        
+        # Show image
+        img = cv2.imread(image_path)
+        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        
+        plt.figure(figsize=(8, 6))
+        plt.imshow(img_rgb)
+        plt.title(f"Baymax: {emotion.upper()} {responses.get(emotion, '')}", fontsize=12)
+        plt.axis('off')
+        plt.show()
+        
+    else:
+        print("No face detected. Please try another image.")
+
+except Exception as e:
+    print(f"Error: {e}")
+    print("Please try a clearer face image.")
+
+print("\n✅ DAY 16 - VERSION A DONE!")
