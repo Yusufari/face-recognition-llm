@@ -1,0 +1,17 @@
+from google import genai
+
+API_KEY = "API"  # Ganti dengan key asli
+client = genai.Client(api_key=API_KEY)
+
+print("=== MODEL YANG TERSEDIA ===\n")
+
+for model in client.models.list():
+    try:
+        # Coba cek apakah model support generateContent
+        if hasattr(model, 'supported_actions') and 'generateContent' in model.supported_actions:
+            print(f"✅ {model.name}")
+        else:
+            # Fallback jika tidak ada supported_actions
+            print(f"🔍 {model.name} (coba sendiri)")
+    except:
+        print(f"🔍 {model.name} (coba sendiri)")
