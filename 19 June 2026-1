@@ -1,0 +1,49 @@
+print("=" * 60)
+print("🤖 BAYMAX MINI - CHAT KESEHATAN")
+print("19 June 2026")
+print("=" * 60)
+
+print("""
+╔══════════════════════════════════════════════════════════╗
+║                                                          ║
+║   🤖 "Hello! I am Baymax, your personal health         ║
+║      companion."                                       ║
+║                                                          ║
+║   Ketik 'exit' untuk berhenti                          ║
+║                                                          ║
+╚══════════════════════════════════════════════════════════╝
+""")
+
+name = input("\nSiapa nama kamu? ") or "Yusuf"
+
+print(f"\n🤖 Baymax: Halo {name}! Aku di sini untuk menjagamu.")
+
+responses = {
+    "sedih": "Aku sedih mendengarnya. Ceritakan apa yang membuatmu sedih.",
+    "lelah": "Kamu perlu istirahat. Coba tidur siang 20 menit.",
+    "sakit": "Kamu perlu ke dokter. Jangan tunggu parah.",
+    "stress": "Tarik napas dalam-dalam. Kamu kuat, {name}!",
+    "bahagia": "Aku senang! Tersenyumlah terus!",
+    "lapar": "Makanlah makanan sehat. Jangan lupa minum air.",
+    "pusing": "Coba duduk dan tutup mata sebentar.",
+    "baik": "Syukurlah! Terus jaga kesehatanmu ya."
+}
+
+while True:
+    msg = input(f"\n{name}: ").lower()
+    
+    if msg in ['exit', 'quit', 'bye', 'selesai']:
+        print(f"\n🤖 Baymax: Sampai jumpa, {name}! Jaga kesehatan!")
+        break
+    
+    replied = False
+    for key, value in responses.items():
+        if key in msg:
+            print(f"🤖 Baymax: {value.format(name=name)}")
+            replied = True
+            break
+    
+    if not replied:
+        print("🤖 Baymax: Aku mendengarkan. Ceritakan bagaimana perasaanmu.")
+
+print("\n✅ PROGRAM SELESAI!")
