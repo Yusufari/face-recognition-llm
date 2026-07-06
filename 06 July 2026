@@ -1,0 +1,165 @@
+import google.generativeai as genai
+import time
+
+print("=" * 60)
+print("🤖 BAYMAX HEMAT - TEXT-ONLY CHAT + GEMINI API")
+print("06 July 2026")
+print("=" * 60)
+
+# =========================================================
+# 1. SETUP GEMINI API
+# =========================================================
+
+print("\n--- SETUP GEMINI API ---")
+API_KEY = input("Masukkan Gemini API key: ").strip()
+
+try:
+    genai.configure(api_key=API_KEY)
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    ai_ready = True
+    print("✅ Gemini API siap!")
+except Exception as e:
+    print(f"❌ Error setup API: {e}")
+    print("\n⚠️ Mode OFFLINE (tanpa AI)")
+    ai_ready = False
+
+# =========================================================
+# 2. FUNGSI DETEKSI EKSPRESI (Manual Input)
+# =========================================================
+
+def get_mood_from_user():
+    print("\n" + "=" * 60)
+    print("📊 BAYMAX MOOD CHECKER (Manual)")
+    print("=" * 60)
+    print("1. 😊 Happy / Senang")
+    print("2. 😔 Sad / Sedih")
+    print("3. 😴 Tired / Lelah")
+    print("4. 🤒 Sick / Sakit")
+    print("5. 😫 Stressed / Stres")
+    print("6. 😐 Neutral / Biasa")
+
+    choice = input("\nPilih angka (1-6) atau ketik langsung perasaanmu: ")
+
+    mood_map = {
+        "1": "happy",
+        "2": "sad",
+        "3": "tired",
+        "4": "sick",
+        "5": "stressed",
+        "6": "neutral"
+    }
+
+    if choice in mood_map:
+        return mood_map[choice]
+    else:
+        return choice.lower().strip()
+
+# =========================================================
+# 3. FUNGSI CHAT DENGAN GEMINI
+# =========================================================
+
+def chat_with_baymax(user_message, mood, chat_history=None):
+    """
+    Kirim teks ke Gemini, hemat token.
+    """
+    # System prompt (instruksi ke AI)
+    system_prompt = f"""
+Kamu adalah Baymax, robot kesehatan dari film Big Hero 6.
+Sifatmu: lembut, perhatian, hangat, selalu menolong.
+User bernama Yusuf.
+
+Ekspresi user saat ini: {mood}
+
+Berikan RESPON SINGKAT (1-2 kalimat) yang hangat, menenangkan, dan sesuai dengan ekspresi user.
+"""
+
+    # Gabungkan riwayat chat jika ada
+    if chat_history:
+        full_prompt = system_prompt + "\n\nRiwayat chat:\n" + chat_history + "\n\nUser: " + user_message
+    else:
+        full_prompt = system_prompt + "\n\nUser: " + user_message
+
+    try:
+        response = model.generate_content(full_prompt)
+        return response.text.strip()
+    except Exception as e:
+        return f"⚠️ Error AI: {e}"
+
+# =========================================================
+# 4. MODE OFFLINE (Tanpa API)
+# =========================================================
+
+offline_responses = {
+    "happy": "Senang mendengarnya! Terus tersenyum, Yusuf! 😊",
+    "sad": "Maaf kamu sedih, Yusuf. Aku di sini untukmu. 🤗",
+    "tired": "Kamu lelah. Istirahatlah sebentar, Yusuf. 😴",
+    "sick": "Kamu sakit? Segera istirahat dan minum obat. 🤒",
+    "stressed": "Tarik napas dalam-dalam. Kamu kuat, Yusuf! 🧘",
+    "neutral": "Kamu terlihat tenang. Itu bagus! 😐",
+    "default": "Aku mendengarkan, Yusuf. Ceritakan perasaanmu."
+}
+
+def offline_response(user_message, mood):
+    for key in offline_responses:
+        if key in mood.lower():
+            return offline_responses[key]
+    return offline_responses["default"]
+
+# =========================================================
+# 5. MAIN PROGRAM
+# =========================================================
+
+print("\n" + "=" * 60)
+print("💬 MODE CHAT DENGAN BAYMAX")
+print("Ketik 'exit' untuk berhenti")
+print("Ketik 'mood' untuk ubah ekspresi")
+print("=" * 60)
+
+# Inisialisasi
+mood = "neutral"
+chat_history = ""
+conversation_count = 0
+
+# Cek mood awal
+mood = get_mood_from_user()
+print(f"\n🤖 Baymax: Ekspresimu saat ini: {mood}")
+
+# Loop chat
+while True:
+    user_input = input("\n🗣️ Yusuf: ").strip()
+
+    # Perintah exit
+    if user_input.lower() in ['exit', 'quit', 'bye', 'selesai']:
+        print("\n🤖 Baymax: Sampai jumpa, Yusuf! Jaga kesehatan!")
+        break
+
+    # Perintah ganti mood
+    if user_input.lower() in ['mood', 'ubah mood']:
+        mood = get_mood_from_user()
+        print(f"\n🤖 Baymax: Mood diubah menjadi: {mood}")
+        continue
+
+    # Kirim ke AI atau offline
+    if ai_ready:
+        response = chat_with_baymax(user_input, mood, chat_history)
+        print(f"🤖 Baymax: {response}")
+
+        # Simpan riwayat (hemat token, hanya 5 percakapan terakhir)
+        conversation_count += 1
+        chat_history += f"User: {user_input}\nBaymax: {response}\n"
+
+        # Batasi riwayat agar tidak terlalu panjang
+        if conversation_count > 5:
+            lines = chat_history.split('\n')
+            chat_history = '\n'.join(lines[-10:])
+            conversation_count = 5
+
+    else:
+        # Mode offline (tanpa AI)
+        response = offline_response(user_input, mood)
+        print(f"🤖 Baymax: {response}")
+
+    # Delay kecil agar tidak terlalu cepat
+    time.sleep(0.5)
+
+print("\n✅ PROGRAM SELESAI!")
