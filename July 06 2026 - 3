@@ -1,0 +1,49 @@
+#!pip install face_recognition -q
+import face_recognition
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from google.colab import files
+
+print("=" * 60)
+print("📌 REVIEW 2: FACE RECOGNITION")
+print("=" * 60)
+
+print("\nUpload 2 foto:")
+print("1. Foto wajahmu (training)")
+print("2. Foto lain (testing - bisa kamu atau orang lain)")
+
+uploaded = files.upload()
+paths = list(uploaded.keys())
+
+if len(paths) >= 2:
+    known_img = face_recognition.load_image_file(paths[0])
+    test_img = face_recognition.load_image_file(paths[1])
+
+    known_encoding = face_recognition.face_encodings(known_img)
+    test_encodings = face_recognition.face_encodings(test_img)
+
+    if len(known_encoding) > 0 and len(test_encodings) > 0:
+        distance = np.linalg.norm(known_encoding[0] - test_encodings[0])
+        is_same = distance < 0.6
+
+        print(f"\n🔍 Jarak antar wajah: {distance:.4f}")
+        if is_same:
+            print("✅ SAMA! Kedua foto adalah orang yang sama.")
+        else:
+            print("❌ BERBEDA! Kedua foto adalah orang yang berbeda.")
+
+        # Tampilkan hasil
+        fig, axes = plt.subplots(1, 2, figsize=(10, 5))
+        axes[0].imshow(known_img)
+        axes[0].set_title("Foto 1 (Training)")
+        axes[0].axis('off')
+        axes[1].imshow(test_img)
+        axes[1].set_title("Foto 2 (Testing)")
+        axes[1].axis('off')
+        plt.tight_layout()
+        plt.show()
+    else:
+        print("❌ Tidak ada wajah terdeteksi di salah satu foto")
+else:
+    print("❌ Upload minimal 2 foto!")
