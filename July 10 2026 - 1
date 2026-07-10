@@ -1,0 +1,146 @@
+# ============================================================
+# FACE RECOGNITION + MTCNN (Juli 2026)
+# ============================================================
+
+!pip install mtcnn face_recognition -q
+
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+from mtcnn import MTCNN
+import face_recognition
+from google.colab import files
+import time
+
+print("=" * 60)
+print("🤖 FACE RECOGNITION + MTCNN")
+print("10 Juli 2026")
+print("=" * 60)
+
+# ============================================================
+# 1. UPLOAD GAMBAR WAJAH UNTUK TRAINING
+# ============================================================
+
+print("\n📸 STEP 1: Upload wajah yang akan dikenali (Training)")
+print("Upload 1-2 foto orang yang sama (misal: foto Yusuf)")
+uploaded_train = files.upload()
+
+train_encodings = []
+train_names = []
+
+for filename in uploaded_train.keys():
+    img = face_recognition.load_image_file(filename)
+    encodings = face_recognition.face_encodings(img)
+
+    if len(encodings) > 0:
+        train_encodings.append(encodings[0])
+        name = filename.split('.')[0][:10]
+        train_names.append(name)
+        print(f"✅ Data training: {name}")
+    else:
+        print(f"❌ Tidak ada wajah di: {filename}")
+
+if len(train_encodings) == 0:
+    print("\n❌ Tidak ada wajah terdeteksi di training!")
+    exit()
+
+print(f"\n✅ Total data training: {len(train_encodings)} wajah")
+
+# ============================================================
+# 2. UPLOAD GAMBAR TESTING (dengan MTCNN)
+# ============================================================
+
+print("\n📸 STEP 2: Upload gambar untuk di-test (Testing)")
+print("Upload 1 foto (bisa kamu atau orang lain)")
+uploaded_test = files.upload()
+
+for filename in uploaded_test.keys():
+    test_path = filename
+    print(f"✅ Testing: {filename}")
+
+# ============================================================
+# 3. DETEKSI WAJAH DENGAN MTCNN
+# ============================================================
+
+print("\n🔍 STEP 3: Deteksi wajah dengan MTCNN")
+
+# Load gambar
+img = cv2.imread(test_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+detector = MTCNN()
+faces = detector.detect_faces(img_rgb)
+
+print(f"✅ Ditemukan {len(faces)} wajah di gambar test")
+
+if len(faces) == 0:
+    print("❌ Tidak ada wajah ditemukan!")
+    exit()
+
+# ============================================================
+# 4. RECOGNIZE SETIAP WAJAH
+# ============================================================
+
+print("\n🔍 STEP 4: Identifikasi wajah (face recognition)")
+
+img_result = img_rgb.copy()
+
+for i, face in enumerate(faces):
+    x, y, w, h = face['box']
+    confidence = face['confidence']
+
+    # Ambil area wajah dari gambar
+    face_roi = img_rgb[y:y+h, x:x+w]
+
+    # Convert ke format yang bisa dipakai face_recognition
+    face_roi_bgr = cv2.cvtColor(face_roi, cv2.COLOR_RGB2BGR)
+
+    # Encode wajah
+    test_encoding = face_recognition.face_encodings(face_roi_bgr)
+
+    if len(test_encoding) > 0:
+        test_encoding = test_encoding[0]
+
+        # Bandingkan dengan data training
+        distances = [np.linalg.norm(train - test_encoding) for train in train_encodings]
+        min_distance = min(distances)
+        best_match_idx = np.argmin(distances)
+
+        # Threshold 0.6 (standar face_recognition)
+        if min_distance < 0.6:
+            name = train_names[best_match_idx]
+            status = f"✅ {name} (d={min_distance:.3f})"
+            color = (0, 255, 0)
+        else:
+            name = "Unknown"
+            status = f"❌ Unknown (d={min_distance:.3f})"
+            color = (0, 0, 255)
+    else:
+        name = "Unknown"
+        status = "❌ Tidak bisa di-encode"
+        color = (0, 0, 255)
+
+    # Gambar kotak dan label
+    cv2.rectangle(img_result, (x, y), (x+w, y+h), color, 3)
+    cv2.putText(img_result, status, (x, y-10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+
+    # Gambar landmark MTCNN
+    for point in face['keypoints'].values():
+        cv2.circle(img_result, point, 3, (255, 255, 0), -1)
+
+    print(f"  Wajah {i+1}: {status}")
+
+# ============================================================
+# 5. TAMPILKAN HASIL
+# ============================================================
+
+plt.figure(figsize=(10, 8))
+plt.imshow(img_result)
+plt.title(f"Hasil: {len(faces)} wajah terdeteksi")
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print("✅ PROGRAM SELESAI!")
+print("=" * 60)
