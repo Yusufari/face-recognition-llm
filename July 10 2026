@@ -1,0 +1,59 @@
+# ============================================================
+# REVIEW: MTCNN FACE DETECTION (10 Juli 2026)
+# ============================================================
+
+!pip install mtcnn -q
+
+import cv2
+import matplotlib.pyplot as plt
+from mtcnn import MTCNN
+from google.colab import files
+
+print("=" * 60)
+print("📌 REVIEW - MTCNN FACE DETECTION")
+print("10 Juli 2026 - Selamat kembali! 🎉")
+print("=" * 60)
+
+# Upload gambar
+print("\n--- UPLOAD GAMBAR WAJAH ---")
+uploaded = files.upload()
+
+for filename in uploaded.keys():
+    image_path = filename
+    print(f"✅ Gambar: {filename}")
+
+# Load dan deteksi
+img = cv2.imread(image_path)
+img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+detector = MTCNN()
+faces = detector.detect_faces(img_rgb)
+
+print(f"\n✅ Ditemukan {len(faces)} wajah dengan MTCNN")
+
+# Gambar hasil
+img_result = img_rgb.copy()
+
+for face in faces:
+    x, y, w, h = face['box']
+    confidence = face['confidence']
+
+    cv2.rectangle(img_result, (x, y), (x+w, y+h), (0, 255, 0), 3)
+    cv2.putText(img_result, f"{confidence:.2f}", (x, y-10),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+
+    # Landmark (mata, hidung, mulut)
+    for point in face['keypoints'].values():
+        cv2.circle(img_result, point, 3, (0, 0, 255), -1)
+
+# Tampilkan
+plt.figure(figsize=(10, 8))
+plt.imshow(img_result)
+plt.title(f"MTCNN: {len(faces)} wajah terdeteksi")
+plt.axis('off')
+plt.show()
+
+print("\n" + "=" * 60)
+print("✅ REVIEW SELESAI! Kamu masih ingat! 🔥")
+print("Besok lanjut materi: MTCNN + Face Recognition")
+print("=" * 60)
